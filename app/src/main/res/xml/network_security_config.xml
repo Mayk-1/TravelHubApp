@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Desde Android 9 (API 28) el trafico HTTP sin cifrar esta bloqueado por defecto.
+  Como en desarrollo el backend corre en http://localhost:3000, aqui abrimos
+  una excepcion SOLO para las direcciones locales. Todo lo demas sigue
+  obligado a usar HTTPS, que es lo que pide el requisito de seguridad
+  del proyecto (cifrado de datos en transito).
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- Como el emulador de Android ve el localhost de la PC -->
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+        <!-- Si prueban en un celular fisico, agreguen aqui la IP local de su PC.
+             Ejemplo: <domain includeSubdomains="true">192.168.1.40</domain> -->
+    </domain-config>
+</network-security-config>

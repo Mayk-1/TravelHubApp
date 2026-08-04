@@ -1,0 +1,58 @@
+*.iml
+.gradle
+/local.properties
+local.properties
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+
+# ---------- Android Studio / IntelliJ ----------
+# Se ignora .idea completo porque guarda rutas absolutas y estado local de
+# cada maquina: en equipo genera conflictos de merge constantes.
+# Las dos excepciones son las que si conviene compartir, para que todos
+# escriban con el mismo formato.
+.idea/*
+!.idea/codeStyles/
+!.idea/inspectionProfiles/
+
+# Directorio de sesiones del compilador de Kotlin 2.x (basura local)
+.kotlin/
+
+# ---------- Salidas de compilacion ----------
+# Con ** cubre tambien modulos nuevos (:core, :data, etc), no solo la raiz.
+**/build/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+
+# ---------- Secretos: NUNCA subir ----------
+# Llaves de firma del APK
+*.jks
+*.keystore
+keystore.properties
+
+# Configuracion de Firebase (Cloud Messaging / Storage)
+google-services.json
+
+# Variables de entorno del backend: credenciales de MySQL, JWT_SECRET, etc.
+.env
+.env.*
+!.env.example
+
+# Claves de API sueltas (Google Maps va en local.properties, ya ignorado)
+secrets.properties
+apikey.properties
+
+# ---------- Backend Node.js ----------
+node_modules/
+npm-debug.log*
+yarn-error.log*
+dist/
+
+# ---------- Varios ----------
+*.log
+Thumbs.db
