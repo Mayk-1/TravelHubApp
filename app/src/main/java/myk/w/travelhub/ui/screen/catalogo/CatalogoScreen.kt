@@ -53,12 +53,6 @@ import myk.w.travelhub.data.model.response.ServicioResponse
 import myk.w.travelhub.ui.common.PreviewClaroOscuro
 import myk.w.travelhub.ui.theme.TravelHubTheme
 
-/**
- * Catalogo de servicios (punto 4.2 del enunciado).
- *
- * Igual que las demas pantallas: una parte con estado que habla con el
- * ViewModel, y otra sin estado que solo dibuja y se puede previsualizar.
- */
 @Composable
 fun CatalogoScreen(
     onServicioClick: (Int) -> Unit = {},
@@ -100,9 +94,6 @@ fun CatalogoContenido(
             onOrdenChange = onOrdenChange
         )
 
-        // El `when` es exhaustivo porque CatalogoUiState es un sealed
-        // interface: si se anade un estado nuevo, esto deja de compilar
-        // hasta que se contemple.
         when (estado) {
             is CatalogoUiState.Cargando -> Centrado { CircularProgressIndicator() }
 
@@ -139,9 +130,6 @@ fun CatalogoContenido(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // La `key` es importante: sin ella, al reordenar la lista
-                // Compose reutiliza las tarjetas por posicion y se ven
-                // parpadeos de imagenes que no corresponden.
                 items(estado.servicios, key = { it.id }) { servicio ->
                     TarjetaServicio(servicio, onClick = { onServicioClick(servicio.id) })
                 }
@@ -222,9 +210,6 @@ private fun TarjetaServicio(servicio: ServicioResponse, onClick: () -> Unit) {
             .clickable(onClick = onClick)
     ) {
         Column {
-            // Las URLs del seed apuntan a un dominio que no existe todavia,
-            // asi que Coil fallara y se vera el fondo gris. Es lo esperado
-            // hasta que haya almacenamiento de imagenes en la nube.
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -358,10 +343,6 @@ private fun Centrado(contenido: @Composable () -> Unit) {
     ) { contenido() }
 }
 
-
-// ---------------------------------------------------------------------------
-// Vistas previas
-// ---------------------------------------------------------------------------
 
 private val categoriasDemo = listOf(
     CategoriaResponse(1, "guia", "Guia turistico", "hiking"),

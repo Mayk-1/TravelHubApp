@@ -3,21 +3,6 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 const servicio = require('../services/chat.service');
 
-/**
- * Chat en tiempo real (punto 4.5 del enunciado).
- *
- * MODELO DE SALAS
- *   usuario:<id>       cada usuario entra a la suya al conectarse. Sirve para
- *                      avisarle de mensajes nuevos aunque no tenga el chat
- *                      abierto (para pintar la insignia de no leidos).
- *   conversacion:<id>  se entra al abrir un chat concreto. Recibe los eventos
- *                      de "escribiendo" y los mensajes de ese hilo.
- *
- * Los mensajes se guardan SIEMPRE en MySQL antes de reenviarse. El socket
- * solo transporta; la fuente de verdad es la base de datos. Si se hiciera al
- * reves, un mensaje enviado con el receptor desconectado se perderia.
- */
-
 const MAX_LONGITUD = 2000;
 
 function configurarChat(servidorHttp, app) {
@@ -26,19 +11,9 @@ function configurarChat(servidorHttp, app) {
 
   const io = new Server(servidorHttp, {
     cors: { origin: origenes.length ? origenes : '*' },
-    // La app movil pierde red a menudo; se le da margen antes de darla por
-    // desconectada para no cortar el chat en cada bache de senal.
     pingTimeout: 30000
   });
 
-  /**
-   * Autenticacion del handshake.
-   *
-   * El token se valida UNA vez, al conectar. Sin esto, cualquiera con la URL
-   * del servidor podria escuchar los eventos. Nunca se confia en un usuario_id
-   * que venga en el payload de un evento: siempre se usa socket.usuario, que
-   * sale del JWT verificado aqui.
-   */
   io.use((socket, next) => {
     const token = socket.handshake.auth?.token
       || (socket.handshake.headers.authorization || '').replace(/^Bearer /, '');
@@ -61,11 +36,6 @@ function configurarChat(servidorHttp, app) {
     socket.join(`usuario:${usuarioId}`);
     console.log(`[socket] conectado usuario ${usuarioId} (${socket.id})`);
 
-    /**
-     * unirse — el usuario abre un chat.
-     * Se comprueba que participe en el hilo ANTES de meterlo en la sala:
-     * si no, podria unirse a cualquier conversacion pasando un id al azar.
-     */
     socket.on('unirse', async (datos, respuesta) => {
       try {
         const conversacionId = Number(datos?.conversacion_id);
@@ -92,18 +62,11 @@ function configurarChat(servidorHttp, app) {
       }
     });
 
-    /** salir — el usuario cierra el chat pero sigue conectado a la app. */
     socket.on('salir', (datos) => {
       const conversacionId = Number(datos?.conversacion_id);
       if (conversacionId) socket.leave(`conversacion:${conversacionId}`);
     });
 
-    /**
-     * mensaje — envio.
-     * El callback `respuesta` le confirma al emisor que quedo guardado, con
-     * el id real que le asigno MySQL. La app lo usa para reemplazar el
-     * mensaje "enviando..." que pinto de forma optimista.
-     */
     socket.on('mensaje', async (datos, respuesta) => {
       try {
         const conversacionId = Number(datos?.conversacion_id);
@@ -120,13 +83,9 @@ function configurarChat(servidorHttp, app) {
 
         const mensaje = await servicio.guardarMensaje(conversacionId, usuarioId, contenido);
 
-        // A la sala del hilo (quien lo tenga abierto) y a la sala personal
-        // del destinatario (para la insignia de no leidos si no lo tiene abierto).
         io.to(`conversacion:${conversacionId}`).emit('mensaje_nuevo', mensaje);
         io.to(`usuario:${acceso.destinatarioUsuarioId}`).emit('mensaje_nuevo', mensaje);
 
-        // TODO: si el destinatario no tiene ningun socket conectado, enviar
-        // una notificacion push por FCM usando la tabla `dispositivos`.
         respuesta?.({ ok: true, mensaje });
       } catch (err) {
         respuesta?.({ ok: false, error: err.message });
@@ -134,16 +93,9 @@ function configurarChat(servidorHttp, app) {
       }
     });
 
-    /**
-     * escribiendo — indicador de "esta escribiendo...".
-     * No toca la base de datos: es efimero por definicion. Se usa
-     * socket.to(...) y no io.to(...) para no reenviarselo al propio emisor.
-     */
     socket.on('escribiendo', (datos) => {
       const conversacionId = Number(datos?.conversacion_id);
       if (!conversacionId) return;
-      // No hace falta comprobar permisos: solo llega a quienes ya estan en la
-      // sala, y para entrar en la sala ya se verifico el acceso en 'unirse'.
       socket.to(`conversacion:${conversacionId}`).emit('escribiendo', {
         conversacion_id: conversacionId,
         usuario_id: usuarioId,
@@ -151,7 +103,6 @@ function configurarChat(servidorHttp, app) {
       });
     });
 
-    /** marcar_leidos — cuando el usuario vuelve a la pantalla del chat. */
     socket.on('marcar_leidos', async (datos, respuesta) => {
       try {
         const conversacionId = Number(datos?.conversacion_id);
@@ -175,8 +126,6 @@ function configurarChat(servidorHttp, app) {
     });
   });
 
-  // Se guarda en la app para que los controllers REST puedan emitir eventos
-  // (ver enviarMensaje en chat.controller.js).
   app.set('io', io);
 
   return io;

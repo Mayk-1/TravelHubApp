@@ -6,9 +6,6 @@ const { asyncHandler, validar } = require('../middleware/errores');
 
 const router = express.Router();
 
-// Todo el panel exige sesion iniciada Y rol de administrador. Al aplicarlo
-// aqui una sola vez, ninguna ruta de este archivo puede quedar expuesta por
-// olvido, que es el riesgo de repetir el middleware ruta por ruta.
 router.use(verificarToken, exigirRol('admin'));
 
 // --- Tablero ---

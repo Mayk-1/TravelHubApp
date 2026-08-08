@@ -6,7 +6,6 @@ const { asyncHandler, validar } = require('../middleware/errores');
 
 const router = express.Router();
 
-// Todas las rutas de reservas exigen sesion iniciada.
 router.use(verificarToken);
 
 router.get('/recibidas', exigirRol('prestador'), asyncHandler(controlador.recibidas));

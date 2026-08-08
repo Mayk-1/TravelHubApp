@@ -6,14 +6,8 @@ const { asyncHandler, validar } = require('../middleware/errores');
 
 const router = express.Router();
 
-// Un itinerario siempre pertenece a alguien: todo exige sesion.
 router.use(verificarToken);
 
-// --- Paradas ---
-// Se agrupan arriba por legibilidad. Aqui el orden no es critico: '/items/:itemId'
-// tiene dos segmentos y '/:id' solo uno, asi que Express nunca los confunde.
-// (En servicios.routes.js si importa: '/categorias' y '/:id' tienen un
-//  segmento cada uno y el primero que coincide gana.)
 router.patch(
   '/items/:itemId',
   [param('itemId').isInt({ min: 1 })],

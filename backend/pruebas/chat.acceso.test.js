@@ -12,8 +12,6 @@ function afirmar(nombre, condicion) {
 }
 
 (async () => {
-  // Conversacion 7: turista es el usuario 2; el prestador es prestadores.id=3,
-  // cuyo usuario_id es 40.
   const fila = { id: 7, turista_id: 2, prestador_id: 3, prestador_usuario_id: 40 };
 
   const comoTurista = await servicio.accesoAConversacion(ejecutorCon(fila), 7, 2);
@@ -30,8 +28,6 @@ function afirmar(nombre, condicion) {
   const extrano = await servicio.accesoAConversacion(ejecutorCon(fila), 7, 99);
   afirmar('un tercero queda fuera', extrano === null);
 
-  // EL CASO IMPORTANTE: el usuario 3 no participa. Pero prestador_id vale 3,
-  // asi que comparar usuario.id contra prestador_id lo dejaria entrar.
   const colision = await servicio.accesoAConversacion(ejecutorCon(fila), 7, 3);
   afirmar('usuario cuyo id coincide con prestador_id NO entra', colision === null);
 

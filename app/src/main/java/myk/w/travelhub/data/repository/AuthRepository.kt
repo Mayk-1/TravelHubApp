@@ -7,17 +7,6 @@ import myk.w.travelhub.data.model.request.LoginRequest
 import myk.w.travelhub.data.model.request.RegistroRequest
 import myk.w.travelhub.data.model.response.AuthResponse
 
-/**
- * Capa que aisla al ViewModel de los detalles de la red.
- *
- * El ViewModel no sabe que existe Retrofit ni que hay codigos HTTP: solo
- * recibe un Result con exito o con un mensaje de error ya legible.
- *
- * El manejo de errores vive en `data/api/ManejoRespuesta.kt`, compartido con
- * el resto de repositorios. Los mensajes concretos ("Correo o contrasena
- * incorrectos") los envia el propio backend en el cuerpo de la respuesta;
- * los genericos de ahi solo se usan si esa respuesta no llega.
- */
 class AuthRepository {
 
     private val api = RetrofitClient.auth

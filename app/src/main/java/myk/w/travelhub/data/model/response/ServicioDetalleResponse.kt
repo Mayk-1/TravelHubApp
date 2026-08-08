@@ -4,15 +4,6 @@ import com.google.gson.annotations.SerializedName
 
 /**
  * GET /api/servicios/:id
- *
- * Es la fila de v_catalogo mas cuatro anadidos que hace el controller:
- * `detalle` (de la tabla satelite), `fotos`, `idiomas` y `resenas`.
- *
- * `detalle` es el punto delicado: sus campos dependen del tipo de servicio.
- * Un guia trae anios_experiencia; un hospedaje trae habitaciones. Como Gson
- * necesita una clase concreta, se declaran TODOS los campos posibles como
- * opcionales y solo llegan los que correspondan. Es la forma mas simple de
- * manejar el Class Table Inheritance del backend desde el cliente.
  */
 data class ServicioDetalleResponse(
     @SerializedName("id") val id: Int,
@@ -60,13 +51,8 @@ data class ServicioDetalleResponse(
             else -> ""
         }
 
-    /** true si el precio se multiplica por las noches entre dos fechas. */
     val requiereRangoDeFechas: Boolean get() = unidadPrecio == "por_noche"
 
-    /**
-     * Pares "etiqueta - valor" con los atributos propios del tipo, listos
-     * para pintar. Devuelve solo los que llegaron.
-     */
     val atributos: List<Pair<String, String>>
         get() {
             val d = detalle ?: return emptyList()
@@ -92,11 +78,6 @@ data class ServicioDetalleResponse(
         }
 }
 
-
-/**
- * Union de los campos de todas las tablas satelite. Todos opcionales:
- * llegan solo los del tipo que corresponda.
- */
 data class DetalleEspecifico(
     // servicios_guia
     @SerializedName("anios_experiencia") val aniosExperiencia: Int? = null,

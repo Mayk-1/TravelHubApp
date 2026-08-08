@@ -1,17 +1,9 @@
 const { validationResult } = require('express-validator');
 
-/**
- * Envuelve un controller async para que cualquier excepcion llegue al
- * manejador de errores de Express.
- *
- * Sin esto, un `await` que falla dentro de un controller async deja la
- * peticion colgada hasta que expira el timeout, en vez de responder 500.
- */
 function asyncHandler(fn) {
   return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 }
 
-/** Corta la peticion si express-validator encontro errores de entrada. */
 function validar(req, res, next) {
   const errores = validationResult(req);
   if (!errores.isEmpty()) {
@@ -27,11 +19,6 @@ function noEncontrado(req, res) {
   res.status(404).json({ error: `Ruta no encontrada: ${req.method} ${req.originalUrl}` });
 }
 
-/**
- * Manejador central de errores. Traduce los codigos de MySQL a respuestas
- * HTTP con sentido, en vez de devolver siempre un 500 opaco.
- */
-// eslint-disable-next-line no-unused-vars
 function manejadorErrores(err, req, res, next) {
   console.error('[error]', err.code || '', err.message);
 

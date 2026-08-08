@@ -15,10 +15,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 
-/**
- * Dialogo modal de carga. Bloquea la interaccion mientras hay una peticion
- * en curso, para que el usuario no dispare dos logins seguidos.
- */
 @Composable
 fun LoadingDialog(
     isLoading: Boolean,

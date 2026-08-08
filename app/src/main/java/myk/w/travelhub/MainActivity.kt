@@ -35,12 +35,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/**
- * Decide la pantalla inicial segun si ya hay un token guardado.
- *
- * Leer el DataStore es una operacion suspendida, asi que mientras responde
- * se muestra un indicador de carga en lugar de parpadear el login.
- */
 @Composable
 private fun RaizApp() {
     val sesionActiva by produceState<Boolean?>(initialValue = null) {

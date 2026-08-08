@@ -23,13 +23,6 @@ sealed interface DetalleViajeUiState {
     data class Error(val mensaje: String) : DetalleViajeUiState
 }
 
-/**
- * Estado del dialogo "anadir una reserva a un dia".
- *
- * Solo se ofrecen las reservas que el turista ya hizo y que todavia no
- * estan en este viaje: meter dos veces la misma seria un error, y el
- * backend lo rechazaria con un 409.
- */
 data class AgregarParadaState(
     val visible: Boolean = false,
     val diaNumero: Int? = null,
@@ -57,9 +50,6 @@ class DetalleViajeViewModel : ViewModel() {
         viewModelScope.launch {
             _uiState.value = DetalleViajeUiState.Cargando
 
-            // Las dos peticiones salen a la vez con async, no una detras de
-            // otra: son independientes, asi que esperar en serie duplicaria
-            // el tiempo de carga sin motivo.
             val detalleAsync = async { repository.detalle(id) }
             val costosAsync = async { repository.costos(id) }
 
@@ -68,9 +58,7 @@ class DetalleViajeViewModel : ViewModel() {
 
             detalle.fold(
                 onSuccess = { viaje ->
-                    // Si los costos fallan, la pantalla se muestra igual sin
-                    // el desglose. Perder el itinerario entero por eso seria
-                    // desproporcionado.
+
                     _uiState.value = DetalleViajeUiState.Exito(viaje, costos.getOrNull())
                 },
                 onFailure = {
@@ -85,15 +73,12 @@ class DetalleViajeViewModel : ViewModel() {
     }
 
 
-    // --- Anadir una reserva como parada ---
-
     fun abrirAgregar(diaNumero: Int) {
         _agregar.value = AgregarParadaState(visible = true, diaNumero = diaNumero, cargando = true)
 
         viewModelScope.launch {
             reservaRepo.mias().fold(
                 onSuccess = { todas ->
-                    // Ids de reservas que ya estan en alguno de los dias.
                     val yaEnElViaje = (_uiState.value as? DetalleViajeUiState.Exito)
                         ?.viaje?.dias
                         ?.flatMap { dia -> dia.items }
@@ -132,8 +117,6 @@ class DetalleViajeViewModel : ViewModel() {
             reservaRepo.agregarAlItinerario(itinerarioId, dia, reservaId).fold(
                 onSuccess = {
                     _agregar.value = AgregarParadaState(visible = false)
-                    // Se recarga todo para que el desglose de costos refleje
-                    // la parada nueva: ese es el punto del ejercicio.
                     cargar(itinerarioId)
                 },
                 onFailure = { e ->

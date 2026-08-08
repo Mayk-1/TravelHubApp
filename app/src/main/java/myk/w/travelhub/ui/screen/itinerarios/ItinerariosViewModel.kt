@@ -20,9 +20,6 @@ class ItinerariosViewModel : ViewModel() {
     private val _nuevoViaje = MutableStateFlow(NuevoViajeState())
     val nuevoViaje: StateFlow<NuevoViajeState> = _nuevoViaje.asStateFlow()
 
-    // Viaje que el usuario pidio borrar y todavia no ha confirmado.
-    // Vive en el ViewModel y no en la pantalla para que sobreviva a un giro
-    // de pantalla: si estuviera en un `remember`, el dialogo se cerraria solo.
     private val _porEliminar = MutableStateFlow<ItinerarioResponse?>(null)
     val porEliminar: StateFlow<ItinerarioResponse?> = _porEliminar.asStateFlow()
 
@@ -51,11 +48,8 @@ class ItinerariosViewModel : ViewModel() {
         }
     }
 
-    // --- Formulario de creacion ---
 
     fun abrirFormulario() {
-        // Se parte de cero cada vez, para no arrastrar lo que el usuario
-        // escribio la vez anterior si cancelo a medias.
         _nuevoViaje.value = NuevoViajeState(visible = true)
     }
 
@@ -88,9 +82,6 @@ class ItinerariosViewModel : ViewModel() {
                     cargar()   // recarga la lista para que aparezca el nuevo
                 },
                 onFailure = { e ->
-                    // El formulario sigue abierto con lo que el usuario
-                    // escribio: perder los datos por un error de red seria
-                    // lo peor que podria pasar aqui.
                     _nuevoViaje.update {
                         it.copy(guardando = false, error = e.message ?: "No se pudo crear el viaje")
                     }
@@ -99,7 +90,6 @@ class ItinerariosViewModel : ViewModel() {
         }
     }
 
-    // --- Eliminar ---
 
     fun pedirEliminar(viaje: ItinerarioResponse) {
         _porEliminar.value = viaje

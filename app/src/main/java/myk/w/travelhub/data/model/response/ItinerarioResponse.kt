@@ -2,13 +2,6 @@ package myk.w.travelhub.data.model.response
 
 import com.google.gson.annotations.SerializedName
 
-/**
- * Un viaje en el listado: GET /api/itinerarios
- *
- * Ademas de las columnas de la tabla, el backend calcula tres valores
- * (`dias`, `total_paradas`, `costo_actual`) para que la tarjeta del listado
- * no tenga que pedir nada mas.
- */
 data class ItinerarioResponse(
     @SerializedName("id") val id: Int,
     @SerializedName("titulo") val titulo: String,
@@ -45,8 +38,6 @@ data class ItinerarioDetalleResponse(
     @SerializedName("dias") val dias: List<DiaResponse> = emptyList()
 )
 
-
-/** Un dia del viaje, con sus paradas ya agrupadas por el backend. */
 data class DiaResponse(
     @SerializedName("id") val id: Int,
     @SerializedName("dia_numero") val numero: Int,
@@ -55,11 +46,6 @@ data class DiaResponse(
     @SerializedName("items") val items: List<ParadaResponse> = emptyList()
 )
 
-
-/**
- * Una parada del dia. Puede ser una reserva o un punto libre del mapa, de
- * ahi que casi todo sea opcional.
- */
 data class ParadaResponse(
     @SerializedName("id") val id: Int,
     @SerializedName("orden") val orden: Int,
@@ -68,8 +54,6 @@ data class ParadaResponse(
     @SerializedName("hora_inicio") val horaInicio: String? = null,
     @SerializedName("hora_fin") val horaFin: String? = null,
 
-    // Resultado cacheado de la Directions API: distancia y tiempo desde la
-    // parada anterior.
     @SerializedName("distancia_metros") val distanciaMetros: Int? = null,
     @SerializedName("duracion_segundos") val duracionSegundos: Int? = null,
 
@@ -82,13 +66,11 @@ data class ParadaResponse(
     @SerializedName("servicio_titulo") val servicioTitulo: String? = null,
     @SerializedName("categoria_slug") val categoriaSlug: String? = null
 ) {
-    /** El titulo del servicio manda; si no hay reserva, el texto libre. */
     val nombre: String
         get() = servicioTitulo ?: tituloLibre ?: "Parada sin nombre"
 
     val esReserva: Boolean get() = reservaId != null
 
-    /** "06:45 - 16:30", o solo la hora de inicio, o vacio. */
     val horario: String
         get() = when {
             horaInicio != null && horaFin != null -> "${corta(horaInicio)} - ${corta(horaFin)}"
@@ -96,7 +78,6 @@ data class ParadaResponse(
             else -> ""
         }
 
-    /** "1.8 km · 20 min" — lo que costo llegar desde la parada anterior. */
     val trayecto: String?
         get() {
             if (distanciaMetros == null) return null

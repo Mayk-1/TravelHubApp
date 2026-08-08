@@ -21,9 +21,6 @@ class CatalogoViewModel : ViewModel() {
     private val _filtros = MutableStateFlow(FiltrosState())
     val filtros: StateFlow<FiltrosState> = _filtros.asStateFlow()
 
-    // Se guarda la corrutina de busqueda para poder cancelarla. Sin esto,
-    // escribir "guia" lanzaria cuatro peticiones y la respuesta de "gu"
-    // podria llegar despues que la de "guia" y pisar los resultados buenos.
     private var busquedaJob: Job? = null
 
     init {
@@ -36,8 +33,6 @@ class CatalogoViewModel : ViewModel() {
             repository.categorias().onSuccess { lista ->
                 _filtros.update { it.copy(categorias = lista) }
             }
-            // Si falla, la pantalla sigue funcionando sin los chips de
-            // categoria. No merece bloquear todo el catalogo por eso.
         }
     }
 
@@ -65,11 +60,6 @@ class CatalogoViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Busqueda con retardo: se espera a que el usuario deje de escribir
-     * medio segundo antes de consultar. Cada tecla cancela la peticion
-     * anterior, asi se hace UNA llamada en vez de una por letra.
-     */
     fun onBusquedaChange(texto: String) {
         _filtros.update { it.copy(busqueda = texto) }
         busquedaJob?.cancel()
@@ -79,7 +69,6 @@ class CatalogoViewModel : ViewModel() {
         }
     }
 
-    /** Pulsar la categoria ya seleccionada la deselecciona (vuelve a "todas"). */
     fun onCategoriaChange(slug: String?) {
         _filtros.update {
             it.copy(categoriaSlug = if (it.categoriaSlug == slug) null else slug)

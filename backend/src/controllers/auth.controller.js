@@ -6,8 +6,6 @@ const { fallar } = require('../middleware/errores');
 const RONDAS_SALT = 10;
 
 function firmarToken(usuario) {
-  // El rol va dentro del token para que el middleware exigirRol no tenga
-  // que consultar la base de datos en cada peticion.
   return jwt.sign(
     { usuarioId: usuario.id, rol: usuario.rol },
     process.env.JWT_SECRET,
@@ -26,13 +24,6 @@ function usuarioPublico(u) {
   };
 }
 
-/**
- * POST /api/auth/registro
- *
- * Si el rol es "prestador", ademas de la fila en `usuarios` hay que crear
- * la de `prestadores`. Las dos operaciones van en una transaccion: si la
- * segunda falla, no queremos dejar un prestador a medio crear.
- */
 async function registrar(req, res) {
   const { nombre, email, password, rol = 'turista', telefono = null } = req.body;
 
@@ -66,8 +57,6 @@ async function registrar(req, res) {
       if (!documento_numero) {
         throw fallar(400, 'Un prestador debe indicar su numero de documento');
       }
-      // estado_verificacion = 'pendiente' por defecto: queda a la espera de
-      // que un administrador lo apruebe antes de poder publicar servicios.
       await conexion.query(
         `INSERT INTO prestadores (usuario_id, documento_tipo, documento_numero, ciudad_base)
          VALUES (?, ?, ?, ?)`,
@@ -97,8 +86,6 @@ async function login(req, res) {
     [email]
   );
 
-  // Mismo mensaje si el correo no existe o si la contrasena esta mal: no se
-  // le confirma a un atacante que direcciones estan registradas.
   if (filas.length === 0) {
     throw fallar(401, 'Correo o contrasena incorrectos');
   }
@@ -131,7 +118,6 @@ async function usuarioActual(req, res) {
 
   const usuario = filas[0];
 
-  // Si es prestador, se adjunta su perfil extendido.
   if (usuario.rol === 'prestador') {
     const [prestadores] = await pool.query(
       `SELECT id, razon_social, descripcion, ciudad_base,
@@ -145,11 +131,6 @@ async function usuarioActual(req, res) {
   res.json(usuario);
 }
 
-/**
- * POST /api/auth/dispositivos
- * Registra el token de Firebase Cloud Messaging del celular para las
- * notificaciones push. Es un upsert: si el token ya existe, solo actualiza.
- */
 async function registrarDispositivo(req, res) {
   const { token_fcm, plataforma = 'android' } = req.body;
 

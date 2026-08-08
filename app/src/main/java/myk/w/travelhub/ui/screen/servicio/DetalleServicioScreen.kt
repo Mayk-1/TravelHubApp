@@ -209,8 +209,6 @@ private fun Ficha(servicio: ServicioDetalleResponse) {
                     Spacer(Modifier.width(12.dp))
                 }
                 Text(
-                    // La direccion viene de la vista v_catalogo (migracion 002);
-                    // si el prestador no la puso, se muestra solo la ciudad.
                     servicio.direccion?.let { "$it, ${servicio.ciudad}" } ?: servicio.ciudad,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -350,8 +348,6 @@ private fun DialogoReserva(
                     .verticalScroll(rememberScrollState())
                     .heightIn(max = 560.dp)
             ) {
-                // Estado final: reserva creada. Se muestra la confirmacion
-                // con el codigo que devolvio el backend.
                 if (reserva.reservaCreada != null) {
                     ConfirmacionReserva(reserva.reservaCreada, onCerrar)
                     return@Column
@@ -535,11 +531,6 @@ private fun ConfirmacionReserva(reserva: ReservaResponse, onCerrar: () -> Unit) 
         Button(onClick = onCerrar, modifier = Modifier.fillMaxWidth()) { Text("Entendido") }
     }
 }
-
-
-// ---------------------------------------------------------------------------
-// Vistas previas
-// ---------------------------------------------------------------------------
 
 private val servicioDemo = ServicioDetalleResponse(
     id = 1,

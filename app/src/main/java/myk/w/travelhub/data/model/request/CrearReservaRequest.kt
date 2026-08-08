@@ -4,9 +4,6 @@ import com.google.gson.annotations.SerializedName
 
 /**
  * Cuerpo de POST /api/reservas
- *
- * `fecha_fin` solo se manda en servicios que se cobran por noche. En los
- * demas va null y Gson lo omite del JSON, que es lo que espera el backend.
  */
 data class CrearReservaRequest(
     @SerializedName("servicio_id") val servicioId: Int,

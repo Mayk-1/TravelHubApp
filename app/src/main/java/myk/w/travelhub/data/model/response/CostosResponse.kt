@@ -3,11 +3,7 @@ package myk.w.travelhub.data.model.response
 import com.google.gson.annotations.SerializedName
 
 /**
- * Calculadora de costos del viaje (punto 4.4):
  * GET /api/reservas/costos/:itinerarioId
- *
- * El backend lo resuelve con la vista v_costos_itinerario, que agrupa las
- * reservas del itinerario por categoria de servicio.
  */
 data class CostosResponse(
     @SerializedName("itinerario_id") val itinerarioId: Int,

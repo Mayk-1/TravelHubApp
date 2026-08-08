@@ -4,18 +4,6 @@ const { fallar } = require('../middleware/errores');
 /**
  * POST /api/resenas
  * Body: { reserva_id, calificacion, comentario }
- *
- * Reglas de negocio (punto 4.7 del enunciado):
- *   - Solo se resena una reserva propia.
- *   - Solo si esta en estado "completada": no se puede calificar un
- *     servicio que todavia no se recibio.
- *   - Una sola resena por reserva. La UNIQUE KEY de la tabla ya lo impide,
- *     pero se comprueba antes para devolver un 409 con mensaje claro en vez
- *     de un error de MySQL.
- *
- * El servicio_id NO se toma del body: se deriva de la reserva. Si se
- * confiara en el body, alguien podria usar su reserva del servicio A para
- * calificar el servicio B.
  */
 async function crear(req, res) {
   const { reserva_id, calificacion, comentario = null } = req.body;
@@ -59,8 +47,6 @@ async function crear(req, res) {
 
     await conexion.commit();
 
-    // El promedio del servicio lo recalcula el trigger trg_resena_insert,
-    // asi que se relee para devolver el valor ya actualizado.
     const [[servicio]] = await pool.query(
       'SELECT calificacion_promedio, total_resenas FROM servicios WHERE id = ?',
       [reserva.servicio_id]
@@ -88,8 +74,6 @@ async function crear(req, res) {
 
 /**
  * GET /api/resenas/servicio/:servicioId?pagina=&limite=
- * Reseñas publicas de un servicio, con el resumen de la distribucion de
- * estrellas para pintar las barras del detalle.
  */
 async function porServicio(req, res) {
   const { servicioId } = req.params;
@@ -167,8 +151,6 @@ async function mias(req, res) {
 
 /**
  * GET /api/resenas/pendientes
- * Reservas completadas que el turista todavia no ha calificado. Es lo que
- * alimenta el aviso de "califica tu experiencia" en la app.
  */
 async function pendientes(req, res) {
   const [filas] = await pool.query(
@@ -192,8 +174,6 @@ async function pendientes(req, res) {
 
 /**
  * PUT /api/resenas/:id
- * Permite corregir la propia resena. El trigger de la tabla solo cubre
- * INSERT y DELETE, asi que al editar hay que recalcular el promedio aqui.
  */
 async function actualizar(req, res) {
   const { id } = req.params;

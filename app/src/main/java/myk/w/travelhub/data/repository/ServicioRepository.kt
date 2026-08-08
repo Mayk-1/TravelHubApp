@@ -12,11 +12,6 @@ class ServicioRepository {
 
     private val api = RetrofitClient.servicios
 
-    /**
-     * Los filtros vacios se envian como null para que Retrofit los omita
-     * de la URL. Mandar `buscar=` vacio haria que el backend filtrase por
-     * cadena vacia en vez de no filtrar.
-     */
     suspend fun listar(
         categoria: String? = null,
         buscar: String? = null,

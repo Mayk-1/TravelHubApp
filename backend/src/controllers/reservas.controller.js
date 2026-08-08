@@ -1,7 +1,6 @@
 const pool = require('../config/db');
 const { fallar } = require('../middleware/errores');
 
-/** Genera un codigo legible tipo TH-2026-000123. */
 function generarCodigo(id) {
   const anio = new Date().getFullYear();
   return `TH-${anio}-${String(id).padStart(6, '0')}`;
@@ -27,7 +26,6 @@ function rangoFechas(inicio, fin) {
 
 /**
  * Calcula cuantas unidades se cobran segun la unidad de precio del servicio.
- * No es lo mismo 90 soles "por noche" que "por persona".
  */
 function calcularCantidad(unidad, { fecha_inicio, fecha_fin, num_personas, horas, km }) {
   switch (unidad) {
@@ -57,15 +55,6 @@ function calcularCantidad(unidad, { fecha_inicio, fecha_fin, num_personas, horas
 
 /**
  * POST /api/reservas
- *
- * Todo el flujo va en una transaccion con bloqueo de filas:
- *   1. Se leen las filas de disponibilidad con SELECT ... FOR UPDATE.
- *   2. Se comprueba que haya cupo en TODAS las fechas.
- *   3. Se inserta la reserva y se incrementan los cupos ocupados.
- *
- * El FOR UPDATE es lo que evita la condicion de carrera: si dos turistas
- * reservan la ultima plaza a la vez, el segundo espera al primero y se
- * encuentra con que ya no hay cupo, en vez de sobrevender.
  */
 async function crear(req, res) {
   const { servicio_id, fecha_inicio, fecha_fin = null, num_personas = 1, notas = null, horas, km } = req.body;
@@ -87,8 +76,6 @@ async function crear(req, res) {
       throw fallar(400, `Este servicio admite un maximo de ${servicio.capacidad_maxima} personas`);
     }
 
-    // Fechas que hay que ocupar. En un servicio por noches se ocupan las
-    // noches (sin el dia de salida); en el resto, solo el dia de inicio.
     const fechasOcupadas = servicio.unidad_precio === 'por_noche' && fecha_fin
       ? rangoFechas(fecha_inicio, fecha_fin)
       : [fecha_inicio];
@@ -297,8 +284,6 @@ async function cambiarEstado(req, res) {
 
 /**
  * GET /api/reservas/costos/:itinerarioId
- * Calculadora de costos del punto 4.4: total del viaje desglosado por
- * categoria. Se apoya en la vista v_costos_itinerario.
  */
 async function costosItinerario(req, res) {
   const { itinerarioId } = req.params;

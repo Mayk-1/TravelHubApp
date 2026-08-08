@@ -6,9 +6,6 @@ const { asyncHandler, validar } = require('../middleware/errores');
 
 const router = express.Router();
 
-// --- Rutas publicas (el catalogo se puede ver sin iniciar sesion) ---
-// OJO con el orden: '/categorias' y '/mios' van ANTES que '/:id', porque
-// si no Express interpretaria "categorias" como un valor de :id.
 router.get('/categorias', asyncHandler(controlador.categorias));
 
 router.get('/mios', verificarToken, exigirRol('prestador'), asyncHandler(controlador.mios));

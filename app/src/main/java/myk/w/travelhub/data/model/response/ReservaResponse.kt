@@ -4,10 +4,6 @@ import com.google.gson.annotations.SerializedName
 
 /**
  * Respuesta de POST /api/reservas y de GET /api/reservas.
- *
- * El listado devuelve mas campos que la creacion (titulo del servicio,
- * categoria, etc.), por eso los extra son opcionales: la misma clase sirve
- * para los dos casos.
  */
 data class ReservaResponse(
     @SerializedName("id") val id: Int,

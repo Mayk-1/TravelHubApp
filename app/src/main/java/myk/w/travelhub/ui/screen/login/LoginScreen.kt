@@ -43,18 +43,6 @@ import myk.w.travelhub.ui.common.LoadingDialog
 import myk.w.travelhub.ui.common.PreviewPantallas
 import myk.w.travelhub.ui.theme.TravelHubTheme
 
-/**
- * Pantalla de login / registro.
- *
- * Esta dividida en dos composables, que es el patron recomendado de Compose:
- *
- *   LoginScreen     -> "con estado": habla con el ViewModel y navega.
- *   LoginContenido  -> "sin estado": solo recibe datos y emite eventos.
- *
- * La ventaja practica es que LoginContenido se puede previsualizar en
- * cualquier estado (error, cargando, modo registro) sin ViewModel ni backend,
- * y ademas es testeable con pruebas de UI.
- */
 @Composable
 fun LoginScreen(
     onLoginExitoso: () -> Unit = {},
@@ -209,8 +197,6 @@ fun LoginContenido(
             }
         }
 
-        // El error vive en el estado del ViewModel, no en una variable suelta
-        // de la UI: asi desaparece solo cuando el estado cambia.
         (estado as? LoginUiState.Error)?.let {
             Spacer(Modifier.height(12.dp))
             Text(

@@ -20,15 +20,6 @@ sealed interface DetalleServicioUiState {
     data class Error(val mensaje: String) : DetalleServicioUiState
 }
 
-/**
- * Estado del formulario de reserva.
- *
- * El subtotal se calcula aqui, en el cliente, para que el usuario lo vea
- * cambiar al instante. Pero el precio que vale es el que devuelve el
- * backend al confirmar: el servidor recalcula todo y aplica los precios
- * especiales de temporada. Este numero es una previsualizacion, no la
- * fuente de verdad.
- */
 data class ReservaFormState(
     val visible: Boolean = false,
     val fechaSeleccionada: String? = null,
@@ -109,8 +100,6 @@ class DetalleServicioViewModel : ViewModel() {
 
     fun onFechaChange(fecha: String) {
         _reserva.update { estado ->
-            // En servicios por noche, elegir la entrada fija la salida al dia
-            // siguiente como minimo.
             val fin = if (requiereRango()) {
                 LocalDate.parse(fecha).plusDays(1).toString()
             } else {
@@ -135,10 +124,6 @@ class DetalleServicioViewModel : ViewModel() {
     private fun requiereRango(): Boolean =
         (_uiState.value as? DetalleServicioUiState.Exito)?.servicio?.requiereRangoDeFechas == true
 
-    /**
-     * Estimacion local del subtotal, solo para mostrarla mientras el usuario
-     * elige. No sustituye al calculo del backend.
-     */
     fun subtotalEstimado(): Double {
         val servicio = (_uiState.value as? DetalleServicioUiState.Exito)?.servicio ?: return 0.0
         val f = _reserva.value
@@ -180,8 +165,6 @@ class DetalleServicioViewModel : ViewModel() {
                     _reserva.update { it.copy(enviando = false, reservaCreada = creada) }
                 },
                 onFailure = { e ->
-                    // El formulario no se cierra: conserva lo elegido y
-                    // muestra por que fallo (sin cupo, fecha no publicada...).
                     _reserva.update {
                         it.copy(enviando = false, error = e.message ?: "No se pudo reservar")
                     }

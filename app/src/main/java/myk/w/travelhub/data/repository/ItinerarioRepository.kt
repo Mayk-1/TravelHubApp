@@ -35,10 +35,6 @@ class ItinerarioRepository {
         )
     }
 
-    /**
-     * DELETE devuelve 204 sin cuerpo. `ejecutarLlamada` exige un body no
-     * nulo, asi que este caso se maneja aparte.
-     */
     suspend fun eliminar(id: Int): Result<Unit> = try {
         val response = api.eliminar(id)
         if (response.isSuccessful) Result.success(Unit)

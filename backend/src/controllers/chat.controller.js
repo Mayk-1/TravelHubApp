@@ -2,11 +2,8 @@ const pool = require('../config/db');
 const { fallar } = require('../middleware/errores');
 const servicio = require('../services/chat.service');
 
-/**
+/*
  * GET /api/chat/conversaciones
- *
- * Lista los hilos del usuario con el ultimo mensaje y cuantos tiene sin leer.
- * Funciona igual para turistas y prestadores: el WHERE cubre los dos casos.
  */
 async function listarConversaciones(req, res) {
   const [filas] = await pool.query(
@@ -35,7 +32,6 @@ async function listarConversaciones(req, res) {
     [req.usuario.id, req.usuario.id, req.usuario.id]
   );
 
-  // Se calcula quien es "el otro" para que la app no tenga que decidirlo.
   const conversaciones = filas.map((c) => {
     const esTurista = c.turista_id === req.usuario.id;
     return {
@@ -56,13 +52,6 @@ async function listarConversaciones(req, res) {
 
 /**
  * POST /api/chat/conversaciones
- * Body: { prestador_id }  o  { servicio_id }
- *
- * Abre el hilo con un prestador. Si ya existe, devuelve el que hay: la tabla
- * tiene UNIQUE (turista_id, prestador_id), un solo hilo por par.
- *
- * Aceptar `servicio_id` es por comodidad de la app: desde la ficha de un
- * servicio se conoce el servicio, no el prestador.
  */
 async function abrirConversacion(req, res) {
   const { prestador_id, servicio_id } = req.body;
@@ -99,8 +88,6 @@ async function abrirConversacion(req, res) {
     throw fallar(400, 'No puedes abrir una conversacion contigo mismo');
   }
 
-  // Upsert: si el hilo ya existe, el ON DUPLICATE KEY lo deja igual y
-  // devuelve su id, sin tener que hacer SELECT + INSERT a mano.
   await pool.query(
     `INSERT INTO conversaciones (turista_id, prestador_id)
      VALUES (?, ?)
@@ -129,10 +116,6 @@ async function abrirConversacion(req, res) {
 
 /**
  * GET /api/chat/conversaciones/:id/mensajes?antes=<id>&limite=
- *
- * Historial paginado por cursor, no por OFFSET. En un chat que crece por
- * arriba, OFFSET se desalinea cuando llegan mensajes nuevos mientras el
- * usuario esta desplazandose; un cursor sobre el id no.
  */
 async function historial(req, res) {
   const { id } = req.params;
@@ -160,13 +143,10 @@ async function historial(req, res) {
     [...parametros, limite]
   );
 
-  // Se consultan en orden descendente (los mas recientes primero) pero se
-  // devuelven ascendentes, que es como los pinta la pantalla de chat.
   mensajes.reverse();
 
   res.json({
     datos: mensajes,
-    // Cursor para pedir la siguiente pagina hacia atras.
     cursor_anterior: mensajes.length === limite ? mensajes[0].id : null
   });
 }
@@ -184,10 +164,6 @@ async function marcarLeidos(req, res) {
 
 /**
  * POST /api/chat/conversaciones/:id/mensajes
- *
- * Envio por REST. Socket.io es el camino normal, pero este existe como
- * respaldo: si el WebSocket no conecta (red del campus, proxy, datos
- * moviles inestables), la app puede seguir enviando por HTTP.
  */
 async function enviarMensaje(req, res) {
   const { id } = req.params;
@@ -198,8 +174,6 @@ async function enviarMensaje(req, res) {
 
   const mensaje = await servicio.guardarMensaje(id, req.usuario.id, contenido.trim());
 
-  // Si hay sockets conectados, se les avisa igual. Asi da lo mismo por que
-  // via se envio: el otro lo recibe en tiempo real de todas formas.
   const io = req.app.get('io');
   if (io) {
     io.to(`conversacion:${id}`).emit('mensaje_nuevo', mensaje);

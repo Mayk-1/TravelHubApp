@@ -53,20 +53,12 @@ import myk.w.travelhub.data.model.response.ParadaResponse
 import myk.w.travelhub.ui.common.PreviewClaroOscuro
 import myk.w.travelhub.ui.theme.TravelHubTheme
 
-/**
- * Detalle del viaje: los dias con sus paradas y el desglose de costos
- * (puntos 4.3 y 4.4 del enunciado).
- *
- * El mapa se anadira aqui mas adelante; por ahora las paradas se muestran
- * como una linea de tiempo vertical.
- */
 @Composable
 fun DetalleViajeScreen(
     itinerarioId: Int,
     onVolver: () -> Unit = {},
     viewModel: DetalleViajeViewModel = viewModel()
 ) {
-    // Se recarga solo si cambia el id, no en cada recomposicion.
     LaunchedEffect(itinerarioId) { viewModel.cargar(itinerarioId) }
 
     val estado by viewModel.uiState.collectAsStateWithLifecycle()
@@ -166,13 +158,6 @@ fun DetalleViajeContenido(
     }
 }
 
-
-/**
- * Elegir cual de mis reservas anadir al dia.
- *
- * Es la pieza que conecta el catalogo con la calculadora de costos: hasta
- * que una reserva no esta en un itinerario, no cuenta en el total.
- */
 @Composable
 private fun DialogoAgregarParada(
     estado: AgregarParadaState,
@@ -273,8 +258,6 @@ private fun Cabecera(viaje: ItinerarioDetalleResponse) {
     }
 }
 
-
-/** Calculadora de costos: desglose por categoria y avance del presupuesto. */
 @Composable
 private fun TarjetaCostos(costos: CostosResponse) {
     Card(colors = CardDefaults.cardColors(
@@ -297,8 +280,7 @@ private fun TarjetaCostos(costos: CostosResponse) {
 
             if (costos.hayPresupuesto && costos.presupuesto != null) {
                 Spacer(Modifier.height(8.dp))
-                // coerceIn evita que la barra se desborde si el gasto supera
-                // el presupuesto: se queda llena al 100%.
+
                 LinearProgressIndicator(
                     progress = { (costos.total / costos.presupuesto).toFloat().coerceIn(0f, 1f) },
                     modifier = Modifier.fillMaxWidth()
@@ -415,7 +397,6 @@ private fun BloqueDia(dia: DiaResponse, onAgregar: (Int) -> Unit = {}) {
 private fun FilaParada(parada: ParadaResponse) {
     Row(modifier = Modifier.padding(start = 13.dp)) {
 
-        // Linea de tiempo vertical: un punto por parada unido por una linea.
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Box(
                 Modifier
@@ -468,10 +449,6 @@ private fun FilaParada(parada: ParadaResponse) {
     }
 }
 
-
-// ---------------------------------------------------------------------------
-// Vistas previas
-// ---------------------------------------------------------------------------
 
 private val viajeDemo = ItinerarioDetalleResponse(
     id = 1,
@@ -540,7 +517,6 @@ private fun DetalleViajePreview() = Envoltorio {
     DetalleViajeContenido(DetalleViajeUiState.Exito(viajeDemo, costosDemo))
 }
 
-/** Caso en que el gasto supera lo presupuestado. */
 @PreviewClaroOscuro
 @Composable
 private fun DetalleExcedidoPreview() = Envoltorio {
@@ -552,7 +528,6 @@ private fun DetalleExcedidoPreview() = Envoltorio {
     )
 }
 
-/** Los costos fallaron pero el itinerario se muestra igual. */
 @PreviewClaroOscuro
 @Composable
 private fun DetalleSinCostosPreview() = Envoltorio {

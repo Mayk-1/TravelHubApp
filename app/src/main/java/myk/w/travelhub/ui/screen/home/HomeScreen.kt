@@ -38,17 +38,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import myk.w.travelhub.ui.common.PreviewClaroOscuro
 import myk.w.travelhub.ui.theme.TravelHubTheme
 
-/**
- * Pantalla de inicio.
- *
- * Deliberadamente simple: saluda, dice con que rol entraste y ofrece dos
- * atajos a las secciones que existen. No consulta nada al servidor — todo
- * lo que muestra sale de la sesion guardada en DataStore.
- *
- * Eso tiene una consecuencia que conviene tener presente: esta pantalla se
- * ve igual con el backend caido. Lo primero que falla al perder conexion es
- * el catalogo o los viajes, no esto.
- */
 @Composable
 fun HomeScreen(
     onCerrarSesion: () -> Unit = {},
@@ -177,10 +166,6 @@ private fun Atajo(
 }
 
 
-// ---------------------------------------------------------------------------
-// Vistas previas
-// ---------------------------------------------------------------------------
-
 @Composable
 private fun Envoltorio(contenido: @Composable () -> Unit) {
     TravelHubTheme(dynamicColor = false) {
@@ -200,7 +185,6 @@ private fun HomePrestadorPreview() = Envoltorio {
     HomeContenido(nombre = "Julio Mamani", rol = "prestador")
 }
 
-/** Caso limite: el DataStore todavia no respondio y ambos valores son null. */
 @PreviewClaroOscuro
 @Composable
 private fun HomeSinDatosPreview() = Envoltorio {

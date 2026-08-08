@@ -7,10 +7,6 @@ import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 
-/**
- * Rutas de navegacion. Usar un sealed class en vez de strings sueltos evita
- * errores de tipeo: si escribes mal el nombre, no compila.
- */
 sealed class Screens(val route: String) {
     data object Login : Screens("login")
 
@@ -30,13 +26,6 @@ sealed class Screens(val route: String) {
     }
 }
 
-/**
- * Las cuatro pestanas de la barra inferior, en orden.
- *
- * Se declaran aqui y no dentro del composable para que la barra y el
- * NavGraph trabajen sobre la misma lista: si se agrega una pestana, no hay
- * que acordarse de tocar dos sitios.
- */
 enum class Pestana(
     val screen: Screens,
     val etiqueta: String,

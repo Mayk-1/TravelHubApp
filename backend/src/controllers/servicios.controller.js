@@ -3,20 +3,6 @@ const { fallar } = require('../middleware/errores');
 
 /**
  * GET /api/servicios
- *
- * Catalogo con los filtros del punto 4.2 del enunciado: ubicacion,
- * categoria, precio y calificacion.
- *
- * Query params:
- *   categoria     slug de categoria ('guia', 'hospedaje', ...)
- *   ciudad        texto exacto
- *   precio_min    numero
- *   precio_max    numero
- *   calificacion  minimo (0-5)
- *   fecha         'YYYY-MM-DD': solo servicios con cupo libre ese dia
- *   buscar        texto libre sobre titulo y descripcion
- *   orden         'precio' | 'precio_desc' | 'calificacion' | 'reciente'
- *   pagina, limite
  */
 async function listar(req, res) {
   const {
@@ -28,8 +14,6 @@ async function listar(req, res) {
   const limite = Math.min(50, Math.max(1, Number(req.query.limite) || 20));
   const offset = (pagina - 1) * limite;
 
-  // Se construye el WHERE dinamicamente pero SIEMPRE con placeholders `?`.
-  // Concatenar valores del usuario en el SQL seria una inyeccion SQL.
   const condiciones = [];
   const parametros = [];
 
@@ -58,7 +42,6 @@ async function listar(req, res) {
     parametros.push(`%${buscar}%`, `%${buscar}%`);
   }
   if (fecha) {
-    // Solo servicios que tengan ese dia habilitado y con cupo disponible.
     condiciones.push(`EXISTS (
       SELECT 1 FROM disponibilidad d
       WHERE d.servicio_id = v_catalogo.id
@@ -71,7 +54,6 @@ async function listar(req, res) {
 
   const where = condiciones.length ? `WHERE ${condiciones.join(' AND ')}` : '';
 
-  // Lista blanca de ordenamientos: el usuario no elige el SQL, solo una clave.
   const ordenamientos = {
     precio: 'precio ASC',
     precio_desc: 'precio DESC',
@@ -98,8 +80,6 @@ async function listar(req, res) {
 
 /**
  * GET /api/servicios/:id
- * Detalle completo, incluyendo los atributos de la tabla satelite que
- * corresponda al tipo de servicio.
  */
 async function detalle(req, res) {
   const { id } = req.params;
@@ -110,7 +90,6 @@ async function detalle(req, res) {
   }
   const servicio = filas[0];
 
-  // Cada categoria vive en su propia tabla satelite (Class Table Inheritance).
   const tablasSatelite = {
     guia: 'servicios_guia',
     hospedaje: 'servicios_hospedaje',
@@ -121,8 +100,6 @@ async function detalle(req, res) {
 
   const tabla = tablasSatelite[servicio.categoria_slug];
   if (tabla) {
-    // `tabla` no viene del usuario: sale del mapa de arriba segun la
-    // categoria que tiene guardada el servicio. No hay inyeccion posible.
     const [detalles] = await pool.query(
       `SELECT * FROM ${tabla} WHERE servicio_id = ?`,
       [id]
@@ -194,7 +171,6 @@ async function categorias(req, res) {
 
 /**
  * POST /api/servicios   (solo prestadores verificados)
- * Panel del prestador, punto 4.6.
  */
 async function crear(req, res) {
   const {
@@ -280,8 +256,6 @@ async function crear(req, res) {
 /**
  * PUT /api/servicios/:id/disponibilidad
  * Body: { fechas: [{ fecha, cupos_totales, precio_especial, bloqueado }] }
- *
- * Upsert masivo en una transaccion: o se guarda todo el calendario o nada.
  */
 async function guardarDisponibilidad(req, res) {
   const { id } = req.params;
@@ -306,8 +280,6 @@ async function guardarDisponibilidad(req, res) {
     await conexion.beginTransaction();
 
     for (const f of fechas) {
-      // La UNIQUE KEY (servicio_id, fecha) permite el upsert sin tener que
-      // hacer SELECT + INSERT/UPDATE a mano.
       await conexion.query(
         `INSERT INTO disponibilidad (servicio_id, fecha, cupos_totales, precio_especial, bloqueado)
          VALUES (?, ?, ?, ?, ?)

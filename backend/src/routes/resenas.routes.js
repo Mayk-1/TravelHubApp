@@ -6,7 +6,6 @@ const { asyncHandler, validar } = require('../middleware/errores');
 
 const router = express.Router();
 
-// Publica: cualquiera puede leer las resenas de un servicio antes de reservar.
 router.get(
   '/servicio/:servicioId',
   [param('servicioId').isInt({ min: 1 })],
@@ -14,7 +13,6 @@ router.get(
   asyncHandler(controlador.porServicio)
 );
 
-// De aqui en adelante hace falta sesion.
 router.use(verificarToken);
 
 router.get('/mias', asyncHandler(controlador.mias));

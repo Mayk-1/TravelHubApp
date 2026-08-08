@@ -52,9 +52,6 @@ import myk.w.travelhub.data.model.response.ItinerarioResponse
 import myk.w.travelhub.ui.common.PreviewClaroOscuro
 import myk.w.travelhub.ui.theme.TravelHubTheme
 
-/**
- * Lista de viajes del turista (punto 4.3 del enunciado).
- */
 @Composable
 fun ItinerariosScreen(
     onViajeClick: (Int) -> Unit = {},
@@ -296,14 +293,6 @@ private fun TarjetaViaje(
 }
 
 
-/**
- * Confirmacion de borrado.
- *
- * Dice explicitamente que se pierde y que NO: las reservas sobreviven
- * porque la clave foranea de itinerario_items hacia reservas es
- * ON DELETE SET NULL. Sin esa aclaracion, mucha gente no borraria un viaje
- * por miedo a perder lo que ya pago.
- */
 @Composable
 private fun DialogoEliminar(
     viaje: ItinerarioResponse,
@@ -391,9 +380,6 @@ private fun DialogoNuevoViaje(
                 )
                 Spacer(Modifier.height(10.dp))
 
-                // Campos de texto y no un selector de calendario: mantiene
-                // la pantalla simple y el formato coincide con lo que espera
-                // el backend. El selector se puede anadir despues.
                 OutlinedTextField(
                     value = formulario.fechaInicio,
                     onValueChange = onFechaInicioChange,
@@ -498,10 +484,6 @@ private fun Centrado(contenido: @Composable () -> Unit) {
     ) { contenido() }
 }
 
-
-// ---------------------------------------------------------------------------
-// Vistas previas
-// ---------------------------------------------------------------------------
 
 private val viajesDemo = listOf(
     ItinerarioResponse(

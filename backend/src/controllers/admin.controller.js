@@ -1,20 +1,6 @@
 const pool = require('../config/db');
 const { fallar } = require('../middleware/errores');
 
-/**
- * Panel de administrador.
- *
- * Todas las rutas de este controller estan detras de exigirRol('admin'),
- * que se aplica una sola vez en admin.routes.js. Aun asi, cada operacion
- * destructiva vuelve a comprobar sus propias reglas: un admin tampoco
- * deberia poder desactivarse a si mismo ni dejar al sistema sin admins.
- */
-
-/**
- * GET /api/admin/metricas
- * Cifras del tablero. Se resuelven en una sola ida a la base de datos con
- * subconsultas en vez de siete SELECT sueltos.
- */
 async function metricas(req, res) {
   const [[generales]] = await pool.query(
     `SELECT
@@ -29,7 +15,6 @@ async function metricas(req, res) {
       (SELECT COALESCE(ROUND(AVG(calificacion), 2), 0) FROM resenas)           AS calificacion_media`
   );
 
-  // Volumen transado: solo cuenta lo que no esta cancelado.
   const [[{ volumen }]] = await pool.query(
     `SELECT COALESCE(SUM(subtotal), 0) AS volumen
      FROM reservas
@@ -47,7 +32,6 @@ async function metricas(req, res) {
      ORDER BY reservas DESC`
   );
 
-  // Reservas de los ultimos 30 dias, para la grafica de tendencia.
   const [porDia] = await pool.query(
     `SELECT DATE(creado_en) AS fecha, COUNT(*) AS cantidad
      FROM reservas
@@ -64,12 +48,6 @@ async function metricas(req, res) {
   });
 }
 
-
-/**
- * GET /api/admin/prestadores?estado=pendiente&buscar=
- * Bandeja de solicitudes. Por defecto muestra las pendientes, que es lo
- * que el admin necesita atender.
- */
 async function listarPrestadores(req, res) {
   const { estado, buscar } = req.query;
   const pagina = Math.max(1, Number(req.query.pagina) || 1);
@@ -120,18 +98,6 @@ async function listarPrestadores(req, res) {
   });
 }
 
-
-/**
- * PATCH /api/admin/prestadores/:id/verificacion
- * Body: { estado: 'aprobado' | 'rechazado' | 'pendiente', motivo }
- *
- * Al rechazar se exige un motivo: el prestador lo vera al intentar publicar
- * un servicio, y sin el no sabria que corregir.
- *
- * Rechazar tambien desactiva los servicios que ya tuviera publicados; si no,
- * un prestador aprobado por error seguiria apareciendo en el catalogo
- * despues de revocarle la aprobacion.
- */
 async function cambiarVerificacion(req, res) {
   const { id } = req.params;
   const { estado, motivo = null } = req.body;
@@ -195,8 +161,6 @@ async function cambiarVerificacion(req, res) {
   }
 }
 
-
-/** GET /api/admin/usuarios?rol=&activo=&buscar= */
 async function listarUsuarios(req, res) {
   const { rol, activo, buscar } = req.query;
   const pagina = Math.max(1, Number(req.query.pagina) || 1);
@@ -221,7 +185,6 @@ async function listarUsuarios(req, res) {
 
   const where = condiciones.length ? `WHERE ${condiciones.join(' AND ')}` : '';
 
-  // Nunca se selecciona password_hash, ni siquiera para el admin.
   const [filas] = await pool.query(
     `SELECT u.id, u.nombre, u.email, u.telefono, u.rol, u.activo, u.creado_en,
             (SELECT COUNT(*) FROM reservas r WHERE r.turista_id = u.id) AS total_reservas
@@ -243,14 +206,6 @@ async function listarUsuarios(req, res) {
   });
 }
 
-
-/**
- * PATCH /api/admin/usuarios/:id/activo
- * Body: { activo: boolean }
- *
- * Desactivar es preferible a borrar: conserva el historial de reservas y
- * las resenas escritas. El login ya rechaza a los usuarios inactivos.
- */
 async function cambiarActivo(req, res) {
   const { id } = req.params;
   const { activo } = req.body;
@@ -293,12 +248,6 @@ async function cambiarActivo(req, res) {
   }
 }
 
-
-/**
- * GET /api/admin/servicios?activo=&categoria=&buscar=
- * Moderacion del catalogo. A diferencia de GET /api/servicios, aqui SI se
- * ven los servicios desactivados, que es justo lo que el admin necesita.
- */
 async function listarServicios(req, res) {
   const { activo, categoria, buscar } = req.query;
   const pagina = Math.max(1, Number(req.query.pagina) || 1);
@@ -356,12 +305,6 @@ async function listarServicios(req, res) {
   });
 }
 
-
-/**
- * PATCH /api/admin/servicios/:id/activo
- * Retira del catalogo un servicio inapropiado sin borrarlo, para no romper
- * las reservas que ya lo referencian (la FK es ON DELETE RESTRICT).
- */
 async function cambiarActivoServicio(req, res) {
   const { id } = req.params;
   const { activo } = req.body;

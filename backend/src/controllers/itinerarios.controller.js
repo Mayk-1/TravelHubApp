@@ -13,11 +13,6 @@ function rangoInclusivo(inicio, fin) {
   return fechas;
 }
 
-/**
- * Comprueba que el itinerario exista y sea del usuario autenticado.
- * Se usa al inicio de casi todos los endpoints: sin esto, cualquiera podria
- * leer o modificar el viaje de otra persona pasando un id distinto.
- */
 async function exigirPropiedad(conexion, itinerarioId, usuarioId) {
   const [filas] = await conexion.query(
     'SELECT * FROM itinerarios WHERE id = ? AND turista_id = ?',
@@ -70,11 +65,6 @@ async function listar(req, res) {
 
 /**
  * POST /api/itinerarios
- *
- * Al crear el viaje se generan automaticamente las filas de
- * `itinerario_dias` para todo el rango de fechas. Asi la app puede pintar
- * el calendario dia por dia de inmediato, sin que el usuario tenga que
- * crearlos a mano uno por uno.
  */
 async function crear(req, res) {
   const {
@@ -132,8 +122,6 @@ async function crear(req, res) {
 
 /**
  * GET /api/itinerarios/:id
- * Detalle completo: el viaje, sus dias y las paradas de cada dia, con los
- * datos del servicio reservado cuando la parada corresponde a una reserva.
  */
 async function detalle(req, res) {
   const itinerario = await exigirPropiedad(pool, req.params.id, req.usuario.id);
@@ -179,11 +167,6 @@ async function detalle(req, res) {
 
 /**
  * PUT /api/itinerarios/:id
- *
- * Si cambian las fechas hay que reconstruir los dias: se agregan los que
- * faltan y se borran los que quedaron fuera del nuevo rango. Borrar un dia
- * arrastra sus paradas por el ON DELETE CASCADE, asi que se avisa cuantas
- * se perderian antes de hacerlo.
  */
 async function actualizar(req, res) {
   const conexion = await pool.getConnection();
@@ -231,8 +214,6 @@ async function actualizar(req, res) {
         );
       }
 
-      // Renumera y crea los dias que falten, sin tocar los que ya existian
-      // (asi conservan sus paradas).
       for (let i = 0; i < nuevas.length; i++) {
         await conexion.query(
           `INSERT INTO itinerario_dias (itinerario_id, dia_numero, fecha)
@@ -264,9 +245,6 @@ async function actualizar(req, res) {
 /** DELETE /api/itinerarios/:id */
 async function eliminar(req, res) {
   await exigirPropiedad(pool, req.params.id, req.usuario.id);
-  // Los dias y sus paradas se van por ON DELETE CASCADE. Las reservas NO:
-  // el itinerario_items tiene ON DELETE SET NULL hacia reservas, asi que el
-  // historial de reservas del turista queda intacto.
   await pool.query('DELETE FROM itinerarios WHERE id = ?', [req.params.id]);
   res.status(204).send();
 }
@@ -274,9 +252,6 @@ async function eliminar(req, res) {
 
 /**
  * POST /api/itinerarios/:id/dias/:diaNumero/items
- *
- * Agrega una parada al dia. Puede ser una reserva ya hecha (reserva_id) o
- * un punto libre del mapa (titulo_libre + coordenadas).
  */
 async function agregarItem(req, res) {
   const { id, diaNumero } = req.params;
@@ -303,8 +278,6 @@ async function agregarItem(req, res) {
     if (dias.length === 0) throw fallar(404, `El itinerario no tiene un dia ${diaNumero}`);
     const diaId = dias[0].id;
 
-    // La reserva tiene que ser del mismo turista: si no, cualquiera podria
-    // meter la reserva de otra persona en su itinerario y ver su costo.
     let lat = latitud;
     let lng = longitud;
     let titulo = titulo_libre;
@@ -332,9 +305,6 @@ async function agregarItem(req, res) {
       lat = lat ?? reservas[0].latitud;
       lng = lng ?? reservas[0].longitud;
 
-      // Y se guarda tambien el titulo del servicio. Asi, si algun dia se
-      // borra la reserva (la FK hace SET NULL), la parada conserva su
-      // nombre en el mapa en vez de quedarse en blanco.
       titulo = titulo ?? reservas[0].titulo;
     }
 
@@ -363,11 +333,6 @@ async function agregarItem(req, res) {
 
 /**
  * PATCH /api/itinerarios/items/:itemId
- *
- * Sirve para mover la parada de hora, y tambien para que la app guarde el
- * resultado de la Directions API (distancia y duracion desde la parada
- * anterior). Cachearlo evita volver a llamar a Google cada vez que se abre
- * el itinerario y permite verlo sin conexion.
  */
 async function actualizarItem(req, res) {
   const item = await exigirPropiedadItem(pool, req.params.itemId, req.usuario.id);
@@ -397,9 +362,7 @@ async function actualizarItem(req, res) {
 
 /**
  * PUT /api/itinerarios/:id/dias/:diaNumero/orden
- * Body: { items: [12, 8, 15] }  <- ids en el orden deseado
- *
- * Es lo que se dispara cuando el usuario arrastra las paradas en la app.
+ * Body: { items: [12, 8, 15] } ids en el orden deseado
  */
 async function reordenarItems(req, res) {
   const { id, diaNumero } = req.params;
@@ -422,8 +385,6 @@ async function reordenarItems(req, res) {
     if (dias.length === 0) throw fallar(404, `El itinerario no tiene un dia ${diaNumero}`);
     const diaId = dias[0].id;
 
-    // Todos los ids enviados tienen que pertenecer a ese dia. Sin esta
-    // comprobacion se podria reordenar (y por tanto tocar) items ajenos.
     const [existentes] = await conexion.query(
       'SELECT id FROM itinerario_items WHERE dia_id = ?',
       [diaId]

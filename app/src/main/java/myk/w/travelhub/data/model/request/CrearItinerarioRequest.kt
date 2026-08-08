@@ -4,9 +4,6 @@ import com.google.gson.annotations.SerializedName
 
 /**
  * Cuerpo de POST /api/itinerarios
- *
- * Las fechas van como texto "YYYY-MM-DD", que es lo que valida el backend
- * con `isDate()` y lo que espera MySQL para una columna DATE.
  */
 data class CrearItinerarioRequest(
     @SerializedName("titulo") val titulo: String,

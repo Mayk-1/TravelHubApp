@@ -1,16 +1,3 @@
--- ============================================================================
--- Migracion 002 — anadir `direccion` a la vista v_catalogo
---
--- Motivo: la columna existe en `servicios` pero la vista no la exponia, asi
--- que la ficha de detalle de la app no podia mostrar la direccion de un
--- hospedaje ni el punto de partida de un tour.
---
--- CREATE OR REPLACE VIEW no toca ningun dato: solo redefine la consulta.
--- Se puede ejecutar con la base en uso.
---
---   mysql -u root -p travelhub < src/db/migraciones/002_direccion_en_catalogo.sql
--- ============================================================================
-
 USE travelhub;
 
 CREATE OR REPLACE VIEW v_catalogo AS

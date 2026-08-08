@@ -43,7 +43,6 @@ class LoginViewModel : ViewModel() {
         _uiState.value = LoginUiState.Inicial   // limpia el error anterior
     }
 
-    /** Un solo boton: segun el modo, hace login o registro. */
     fun enviar() {
         val f = _form.value
         if (!f.esValido) return

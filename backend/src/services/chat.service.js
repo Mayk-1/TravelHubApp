@@ -1,24 +1,5 @@
 const pool = require('../config/db');
 
-/**
- * Logica de chat compartida entre la API REST y Socket.io.
- *
- * Vive aparte a proposito: la comprobacion de "puede este usuario escribir en
- * esta conversacion" tiene que ser identica por los dos caminos. Si estuviera
- * duplicada, bastaria con arreglar un lado y olvidar el otro para dejar un
- * agujero por el que se lee el chat de otra persona.
- */
-
-/**
- * Comprueba que el usuario sea uno de los dos participantes.
- *
- * OJO con la asimetria de la tabla: `conversaciones.turista_id` apunta a
- * usuarios.id, pero `prestador_id` apunta a prestadores.id, no a usuarios.id.
- * Compararlos directamente contra req.usuario.id seria un error silencioso
- * que dejaria entrar al usuario equivocado cuando los ids coincidan por azar.
- *
- * @returns {null|{conversacion, esTurista, destinatarioUsuarioId}}
- */
 async function accesoAConversacion(ejecutor, conversacionId, usuarioId) {
   const [filas] = await ejecutor.query(
     `SELECT c.id, c.turista_id, c.prestador_id,
@@ -39,18 +20,10 @@ async function accesoAConversacion(ejecutor, conversacionId, usuarioId) {
   return {
     conversacion: c,
     esTurista,
-    // A quien hay que notificar cuando este usuario escribe.
     destinatarioUsuarioId: esTurista ? c.prestador_usuario_id : c.turista_id
   };
 }
 
-/**
- * Guarda un mensaje y actualiza la marca de actividad de la conversacion.
- *
- * Las dos escrituras van juntas en una transaccion: si se guardara el mensaje
- * pero fallara el UPDATE, la conversacion quedaria ordenada mal en la lista
- * y el ultimo mensaje no aparecería arriba.
- */
 async function guardarMensaje(conversacionId, emisorId, contenido) {
   const conexion = await pool.getConnection();
   try {
@@ -85,10 +58,7 @@ async function guardarMensaje(conversacionId, emisorId, contenido) {
   }
 }
 
-/** Marca como leidos los mensajes que el usuario recibio en esa conversacion. */
 async function marcarLeidos(conversacionId, usuarioId) {
-  // La condicion emisor_id <> ? es clave: uno marca como leidos los mensajes
-  // del OTRO, nunca los propios.
   const [resultado] = await pool.query(
     `UPDATE mensajes
      SET leido = TRUE

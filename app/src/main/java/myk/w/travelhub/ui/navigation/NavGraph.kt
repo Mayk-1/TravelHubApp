@@ -33,8 +33,6 @@ fun NavGraph(sesionActiva: Boolean) {
 
     val navController = rememberNavController()
 
-    // La barra inferior solo aparece en las pestanas, nunca en el login ni
-    // en las pantallas de detalle.
     val entrada by navController.currentBackStackEntryAsState()
     val rutaActual = entrada?.destination?.route
     val mostrarBarra = Pestana.entries.any { it.screen.route == rutaActual }
@@ -53,9 +51,6 @@ fun NavGraph(sesionActiva: Boolean) {
                 LoginScreen(
                     onLoginExitoso = {
                         navController.navigate(Screens.Home.route) {
-                            // Saca el login del historial: si el usuario pulsa
-                            // "atras" desde Home, sale de la app en vez de volver
-                            // al formulario ya estando autenticado.
                             popUpTo(Screens.Login.route) { inclusive = true }
                             launchSingleTop = true
                         }
@@ -67,16 +62,10 @@ fun NavGraph(sesionActiva: Boolean) {
                 HomeScreen(
                     onCerrarSesion = {
                         navController.navigate(Screens.Login.route) {
-                            // Se limpia TODO el historial: tras cerrar sesion no
-                            // debe quedar ninguna pantalla con datos del usuario
-                            // accesible con el boton atras.
                             popUpTo(0) { inclusive = true }
                             launchSingleTop = true
                         }
                     },
-                    // Los atajos llevan a las pestanas con las mismas opciones
-                    // que la barra inferior, para que el estado se conserve y
-                    // la pestana quede marcada correctamente.
                     onIrACatalogo = { navController.irAPestana(Screens.Catalogo) },
                     onIrAViajes = { navController.irAPestana(Screens.Itinerarios) }
                 )
@@ -109,9 +98,6 @@ fun NavGraph(sesionActiva: Boolean) {
                         servicioId = id,
                         onVolver = { navController.popBackStack() },
                         onReservaCreada = {
-                            // Tras reservar se lleva al usuario a sus viajes,
-                            // que es donde tiene que anadir la reserva para
-                            // que cuente en la calculadora de costos.
                             navController.irAPestana(Screens.Itinerarios)
                         }
                     )
@@ -119,8 +105,6 @@ fun NavGraph(sesionActiva: Boolean) {
             }
 
             composable(Screens.DetalleViaje.route) { entradaRuta ->
-                // El argumento llega como texto en la ruta; si no se puede
-                // convertir, se vuelve atras en vez de reventar.
                 val id = entradaRuta.arguments?.getString("id")?.toIntOrNull()
                 if (id == null) {
                     EnConstruccion("Viaje no valido")
@@ -143,9 +127,6 @@ private fun BarraInferior(
 ) {
     NavigationBar {
         Pestana.entries.forEach { pestana ->
-            // Se mira toda la jerarquia y no solo la ruta exacta para que la
-            // pestana siga marcada si mas adelante se anidan subpantallas
-            // dentro de ella.
             val seleccionada = destinoActual?.hierarchy
                 ?.any { it.route == pestana.screen.route } == true
 
@@ -159,23 +140,6 @@ private fun BarraInferior(
     }
 }
 
-
-/**
- * Navega a una pestana de la barra inferior.
- *
- * Estas tres opciones son las que hacen que una barra inferior se comporte
- * como se espera:
- *
- *   popUpTo(inicio) + saveState -> no se apila una pantalla nueva cada vez
- *       que se cambia de pestana, pero cada una recuerda donde estaba
- *       (scroll, filtros del catalogo, etc).
- *   launchSingleTop -> pulsar la pestana actual no la vuelve a crear.
- *   restoreState -> al volver, se recupera lo guardado.
- *
- * Esta extraido a una funcion porque lo usan tres sitios: la barra, los
- * atajos de Home y el salto a Viajes tras crear una reserva. Repetirlo
- * invitaba a que uno de los tres se quedara desincronizado.
- */
 private fun NavHostController.irAPestana(destino: Screens) {
     navigate(destino.route) {
         popUpTo(graph.findStartDestination().id) { saveState = true }
@@ -184,8 +148,6 @@ private fun NavHostController.irAPestana(destino: Screens) {
     }
 }
 
-
-/** Marcador para las pestanas que todavia no tienen pantalla. */
 @Composable
 private fun EnConstruccion(nombre: String) {
     Box(
