@@ -14,7 +14,6 @@ router.get('/', asyncHandler(controlador.listar));
 router.get('/:id', asyncHandler(controlador.detalle));
 router.get('/:id/disponibilidad', asyncHandler(controlador.disponibilidad));
 
-// --- Rutas del prestador ---
 router.post(
   '/',
   verificarToken,

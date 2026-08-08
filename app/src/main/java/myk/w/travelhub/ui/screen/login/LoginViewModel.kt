@@ -40,7 +40,7 @@ class LoginViewModel : ViewModel() {
 
     fun alternarModo() {
         _form.update { it.copy(modoRegistro = !it.modoRegistro) }
-        _uiState.value = LoginUiState.Inicial   // limpia el error anterior
+        _uiState.value = LoginUiState.Inicial
     }
 
     fun enviar() {

@@ -51,7 +51,6 @@ fun LoginScreen(
     val estado by viewModel.uiState.collectAsStateWithLifecycle()
     val form by viewModel.form.collectAsStateWithLifecycle()
 
-    // Efecto secundario: cuando el login sale bien, navegar UNA sola vez.
     LaunchedEffect(estado) {
         if (estado is LoginUiState.Exito) {
             viewModel.consumirEstado()

@@ -87,7 +87,7 @@ async function login(req, res) {
   );
 
   if (filas.length === 0) {
-    throw fallar(401, 'Correo o contrasena incorrectos');
+    throw fallar(401, 'Correo o contraseña incorrectos');
   }
 
   const usuario = filas[0];
@@ -98,7 +98,7 @@ async function login(req, res) {
 
   const passwordValida = await bcrypt.compare(password, usuario.password_hash);
   if (!passwordValida) {
-    throw fallar(401, 'Correo o contrasena incorrectos');
+    throw fallar(401, 'Correo o contraseña incorrectos');
   }
 
   res.json({ token: firmarToken(usuario), usuario: usuarioPublico(usuario) });

@@ -22,7 +22,6 @@ router.delete(
   asyncHandler(controlador.eliminarItem)
 );
 
-// --- Itinerarios ---
 router.get('/', asyncHandler(controlador.listar));
 
 router.post(
@@ -55,7 +54,6 @@ router.put(
 
 router.delete('/:id', [param('id').isInt({ min: 1 })], validar, asyncHandler(controlador.eliminar));
 
-// --- Paradas dentro de un dia ---
 router.post(
   '/:id/dias/:diaNumero/items',
   [

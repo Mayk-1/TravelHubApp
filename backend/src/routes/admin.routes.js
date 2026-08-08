@@ -8,10 +8,8 @@ const router = express.Router();
 
 router.use(verificarToken, exigirRol('admin'));
 
-// --- Tablero ---
 router.get('/metricas', asyncHandler(controlador.metricas));
 
-// --- Prestadores ---
 router.get(
   '/prestadores',
   [query('estado').optional().isIn(['pendiente', 'aprobado', 'rechazado'])
@@ -33,7 +31,6 @@ router.patch(
   asyncHandler(controlador.cambiarVerificacion)
 );
 
-// --- Usuarios ---
 router.get(
   '/usuarios',
   [query('rol').optional().isIn(['turista', 'prestador', 'admin'])
@@ -52,7 +49,6 @@ router.patch(
   asyncHandler(controlador.cambiarActivo)
 );
 
-// --- Servicios ---
 router.get('/servicios', asyncHandler(controlador.listarServicios));
 
 router.patch(

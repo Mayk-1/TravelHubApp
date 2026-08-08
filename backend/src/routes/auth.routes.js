@@ -14,7 +14,7 @@ router.post(
     body('email').trim().isEmail().withMessage('El correo no es valido')
       .normalizeEmail(),
     body('password').isLength({ min: 8 })
-      .withMessage('La contrasena debe tener al menos 8 caracteres'),
+      .withMessage('La contraseña debe tener al menos 8 caracteres'),
     body('rol').optional().isIn(['turista', 'prestador'])
       .withMessage('El rol debe ser turista o prestador')
   ],
@@ -26,7 +26,7 @@ router.post(
   '/login',
   [
     body('email').trim().isEmail().withMessage('El correo no es valido').normalizeEmail(),
-    body('password').notEmpty().withMessage('La contrasena es obligatoria')
+    body('password').notEmpty().withMessage('La contraseña es obligatoria')
   ],
   validar,
   asyncHandler(controlador.login)
