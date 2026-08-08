@@ -5,14 +5,6 @@ import myk.w.travelhub.data.model.response.ErrorResponse
 import retrofit2.Response
 import java.io.IOException
 
-/**
- * Traduce cualquier llamada a la API en un Result con exito o con un mensaje
- * ya legible para el usuario.
- *
- * Vive aqui, y no dentro de cada repositorio, porque el mapeo de errores
- * tiene que ser identico en toda la app. Si estuviera copiado en cada
- * repositorio, en cuanto se mejorara uno los demas quedarian atras.
- */
 suspend fun <T> ejecutarLlamada(bloque: suspend () -> Response<T>): Result<T> {
     return try {
         val response = bloque()
@@ -35,10 +27,6 @@ suspend fun <T> ejecutarLlamada(bloque: suspend () -> Response<T>): Result<T> {
     }
 }
 
-/**
- * El backend responde siempre { "error": "mensaje" }. Si por algun motivo
- * no llega asi, se cae a un mensaje generico segun el codigo HTTP.
- */
 private fun <T> mensajeDeError(response: Response<T>): String {
     val crudo = try {
         response.errorBody()?.string()

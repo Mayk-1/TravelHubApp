@@ -4,12 +4,6 @@ import myk.w.travelhub.data.local.TokenStore
 import okhttp3.Interceptor
 import okhttp3.Response
 
-/**
- * Adjunta automaticamente el header "Authorization: Bearer <token>" a cada
- * peticion, si es que hay una sesion activa.
- *
- * Sin esto, todos los endpoints protegidos del backend responden 401.
- */
 class AuthInterceptor : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {

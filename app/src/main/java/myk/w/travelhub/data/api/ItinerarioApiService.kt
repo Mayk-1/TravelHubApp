@@ -11,13 +11,6 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
 
-/**
- * Endpoints de itinerarios. Todos exigen sesion: el AuthInterceptor adjunta
- * el token automaticamente.
- *
- * Ojo con `costos`: cuelga de /reservas, no de /itinerarios. Es asi en el
- * backend porque el calculo se hace sobre las reservas del viaje.
- */
 interface ItinerarioApiService {
 
     @GET("itinerarios")

@@ -9,12 +9,6 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 
-/**
- * Contrato de los endpoints de autenticacion.
- *
- * Retrofit genera la implementacion en tiempo de ejecucion: cada funcion
- * se traduce a una llamada HTTP contra BASE_URL + la ruta de la anotacion.
- */
 interface AuthApiService {
 
     @POST("auth/registro")

@@ -10,17 +10,7 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-/**
- * Endpoints del catalogo. Son publicos en el backend (no exigen token),
- * asi que funcionan aunque la sesion haya caducado.
- */
 interface ServicioApiService {
-
-    /**
-     * Los parametros con valor null NO se envian en la URL: Retrofit los
-     * omite. Por eso se pueden declarar todos los filtros aqui y mandar
-     * solo los que el usuario haya elegido.
-     */
     @GET("servicios")
     suspend fun listar(
         @Query("categoria") categoria: String? = null,

@@ -18,11 +18,6 @@ interface ReservaApiService {
     @GET("reservas")
     suspend fun mias(@Query("estado") estado: String? = null): Response<List<ReservaResponse>>
 
-    /**
-     * Anadir una reserva como parada de un dia del itinerario.
-     * Vive aqui y no en ItinerarioApiService porque el flujo lo dispara la
-     * reserva, no el viaje.
-     */
     @POST("itinerarios/{id}/dias/{dia}/items")
     suspend fun agregarAlItinerario(
         @Path("id") itinerarioId: Int,
