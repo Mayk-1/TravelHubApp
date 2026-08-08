@@ -1,5 +1,6 @@
 package myk.w.travelhub.data.api
 
+import com.google.gson.GsonBuilder
 import myk.w.travelhub.BuildConfig
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -32,19 +33,34 @@ object RetrofitClient {
         .readTimeout(30, TimeUnit.SECONDS)
         .build()
 
+    /**
+     * Gson configurado para tolerar los booleanos de MySQL.
+     *
+     * MySQL manda 1 y 0 donde la app espera true y false (ver
+     * BooleanFlexible.kt). Hay que registrar los DOS tipos: el primitivo
+     * `boolean` de Kotlin y el `java.lang.Boolean` de los campos que
+     * admiten null. Registrar solo uno deja el otro fallando.
+     */
+    private val gson = GsonBuilder()
+        .registerTypeAdapter(Boolean::class.java, BooleanFlexible())
+        .registerTypeAdapter(Boolean::class.javaObjectType, BooleanFlexible())
+        .create()
+
     // "by lazy": el objeto Retrofit se construye la primera vez que se usa
     // y luego se reutiliza en toda la app.
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BuildConfig.BASE_URL)
             .client(client)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
     }
 
     val auth: AuthApiService by lazy { retrofit.create(AuthApiService::class.java) }
+    val servicios: ServicioApiService by lazy { retrofit.create(ServicioApiService::class.java) }
+    val itinerarios: ItinerarioApiService by lazy { retrofit.create(ItinerarioApiService::class.java) }
+    val reservas: ReservaApiService by lazy { retrofit.create(ReservaApiService::class.java) }
 
     // Conforme avance el proyecto se agregan aqui los demas servicios:
-    // val servicios: ServicioApiService by lazy { retrofit.create(...) }
-    // val reservas: ReservaApiService by lazy { retrofit.create(...) }
+    // val chat: ChatApiService by lazy { retrofit.create(...) }
 }

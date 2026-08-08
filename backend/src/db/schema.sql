@@ -1,11 +1,7 @@
 -- ============================================================================
 -- TravelHub - Esquema MySQL
--- Plataforma movil integral para la gestion de servicios turisticos
--- Universidad Nacional del Altiplano - Desarrollo de Plataformas 2026
 -- ============================================================================
---
 -- ESTRATEGIA DE MODELADO
---
 -- Los tipos de servicio (guia, hospedaje, alimentacion, transporte,
 -- traduccion) comparten muchos atributos (precio, ubicacion, prestador,
 -- calificacion) pero cada uno tiene los suyos propios. Se aplica el patron
@@ -53,7 +49,7 @@ CREATE TABLE usuarios (
 ) ENGINE=InnoDB;
 
 -- Perfil extendido de quien ofrece servicios.
--- `verificado` lo activa un administrador: es el flujo de aprobacion de
+-- `estado_verificacion` lo cambia un administrador: es el flujo de aprobacion de
 -- prestadores del punto 4.1 del enunciado.
 CREATE TABLE prestadores (
   id                INT AUTO_INCREMENT PRIMARY KEY,
@@ -63,7 +59,12 @@ CREATE TABLE prestadores (
   documento_tipo    ENUM('DNI','RUC','CE','PASAPORTE') NOT NULL DEFAULT 'DNI',
   documento_numero  VARCHAR(20)   NOT NULL,
   ciudad_base       VARCHAR(100)  NOT NULL DEFAULT 'Puno',
-  verificado        BOOLEAN       NOT NULL DEFAULT FALSE,
+  -- Tres estados, no un booleano: hay que poder distinguir a un prestador
+  -- que todavia nadie reviso de uno que fue revisado y rechazado. Con un
+  -- BOOLEAN ambos casos son "false" y el admin no sabria cual es cual.
+  estado_verificacion ENUM('pendiente','aprobado','rechazado')
+                    NOT NULL DEFAULT 'pendiente',
+  motivo_rechazo    VARCHAR(255)  NULL,
   verificado_por    INT           NULL,
   verificado_en     TIMESTAMP     NULL,
   creado_en         TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -74,7 +75,7 @@ CREATE TABLE prestadores (
   CONSTRAINT fk_prestador_verificador
     FOREIGN KEY (verificado_por) REFERENCES usuarios(id) ON DELETE SET NULL,
   UNIQUE KEY uq_prestador_documento (documento_tipo, documento_numero),
-  INDEX idx_prestadores_verificado (verificado)
+  INDEX idx_prestadores_estado (estado_verificacion)
 ) ENGINE=InnoDB;
 
 -- Tokens de Firebase Cloud Messaging. Un usuario puede tener varios
@@ -392,16 +393,11 @@ CREATE TABLE itinerario_items (
   -- vinculado a un servicio contratado.
   CONSTRAINT fk_item_reserva
     FOREIGN KEY (reserva_id) REFERENCES reservas(id) ON DELETE SET NULL,
-  -- Un item tiene que ser una cosa o la otra, no puede estar vacio.
-  CONSTRAINT chk_item_contenido
-    CHECK (reserva_id IS NOT NULL OR titulo_libre IS NOT NULL),
+
   INDEX idx_items_dia (dia_id, orden)
 ) ENGINE=InnoDB;
 
-
--- ============================================================================
 -- 5. MENSAJERIA (punto 4.5) - persistida en MySQL, entregada por Socket.io
--- ============================================================================
 
 CREATE TABLE conversaciones (
   id             INT AUTO_INCREMENT PRIMARY KEY,
@@ -434,16 +430,11 @@ CREATE TABLE mensajes (
   INDEX idx_mensajes_conversacion (conversacion_id, enviado_en)
 ) ENGINE=InnoDB;
 
-
--- ============================================================================
 -- 6. CALIFICACIONES Y RESENAS (punto 4.7)
--- ============================================================================
 
 CREATE TABLE resenas (
   id            INT AUTO_INCREMENT PRIMARY KEY,
-  -- UNIQUE: una sola resena por reserva. Es la regla que impide inflar la
-  -- calificacion de un servicio resenandolo muchas veces, y ademas obliga
-  -- a que quien resena efectivamente haya contratado el servicio.
+  -- UNIQUE: una sola resena por reserva
   reserva_id    INT           NOT NULL UNIQUE,
   turista_id    INT           NOT NULL,
   servicio_id   INT           NOT NULL,
@@ -460,10 +451,7 @@ CREATE TABLE resenas (
   INDEX idx_resenas_servicio (servicio_id)
 ) ENGINE=InnoDB;
 
-
--- ============================================================================
 -- 7. VISTAS DE APOYO
--- ============================================================================
 
 -- Catalogo listo para la app: evita repetir estos JOIN en cada endpoint.
 CREATE VIEW v_catalogo AS
@@ -474,6 +462,7 @@ SELECT
   s.precio,
   s.moneda,
   s.unidad_precio,
+  s.direccion,
   s.ciudad,
   s.latitud,
   s.longitud,
@@ -486,7 +475,7 @@ SELECT
   p.id          AS prestador_id,
   u.nombre      AS prestador_nombre,
   u.foto_url    AS prestador_foto,
-  p.verificado  AS prestador_verificado,
+  (p.estado_verificacion = 'aprobado') AS prestador_verificado,
   (SELECT f.url FROM servicio_fotos f
     WHERE f.servicio_id = s.id
     ORDER BY f.orden LIMIT 1) AS foto_principal
@@ -551,6 +540,38 @@ BEGIN
         SELECT ROUND(AVG(r.calificacion), 2) FROM resenas r WHERE r.servicio_id = OLD.servicio_id
       ), 0)
   WHERE s.id = OLD.servicio_id;
+END//
+
+
+-- ---------------------------------------------------------------------------
+-- Una parada del itinerario tiene que ser algo: o una reserva, o un punto
+-- libre con nombre. Esto seria un CHECK si MySQL lo permitiera sobre una
+-- columna con ON DELETE SET NULL (ver la nota en itinerario_items), asi que
+-- se hace con triggers.
+--
+-- Cubren INSERT y UPDATE, que es por donde escribe la aplicacion. El
+-- SET NULL de la clave foranea no dispara triggers en MySQL, pero tampoco
+-- deja la fila vacia: el controlador guarda siempre un titulo.
+-- ---------------------------------------------------------------------------
+
+CREATE TRIGGER trg_item_contenido_insert
+BEFORE INSERT ON itinerario_items
+FOR EACH ROW
+BEGIN
+  IF NEW.reserva_id IS NULL AND (NEW.titulo_libre IS NULL OR NEW.titulo_libre = '') THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Una parada necesita una reserva o un titulo';
+  END IF;
+END//
+
+CREATE TRIGGER trg_item_contenido_update
+BEFORE UPDATE ON itinerario_items
+FOR EACH ROW
+BEGIN
+  IF NEW.reserva_id IS NULL AND (NEW.titulo_libre IS NULL OR NEW.titulo_libre = '') THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Una parada necesita una reserva o un titulo';
+  END IF;
 END//
 
 DELIMITER ;

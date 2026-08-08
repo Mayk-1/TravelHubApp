@@ -4,7 +4,7 @@ Documento técnico del modelo entidad-relación. Corresponde 1 a 1 con
 `backend/src/db/schema.sql`.
 
 **Motor:** MySQL 8 / InnoDB · **Charset:** `utf8mb4_unicode_ci`
-**Tablas:** 21 · **Vistas:** 2 · **Claves foráneas:** 27 · **Restricciones CHECK:** 17
+**Tablas:** 21 · **Vistas:** 2 · **Claves foráneas:** 27 · **Restricciones CHECK:** 16 · **Triggers:** 4
 
 ---
 
@@ -48,19 +48,52 @@ reseñas. La consistencia la garantizan dos **triggers** (`trg_resena_insert`,
 `trg_resena_delete`), no el código de Node — así el dato no puede quedar
 desincronizado si alguien inserta por otra vía.
 
-### 1.4. Categorías como tabla, no como ENUM
+### 1.4. Verificación de prestadores con tres estados
+
+`prestadores.estado_verificacion` es un `ENUM('pendiente','aprobado','rechazado')`,
+no un booleano. Con un booleano, "nunca revisado" y "revisado y rechazado"
+serían ambos `false`, y el administrador no podría saber qué solicitudes le
+quedan por atender. `motivo_rechazo` acompaña al estado `rechazado` y se le
+muestra al prestador para que sepa qué corregir.
+
+*(Cambio introducido por la migración `001_estado_verificacion.sql`.)*
+
+### 1.5. Categorías como tabla, no como ENUM
 
 `categorias_servicio` es una tabla de consulta. Agregar una categoría es un
 `INSERT`, no un `ALTER TABLE` que bloquea la tabla.
 
-### 1.5. Política de borrado
+### 1.6. Una regla que MySQL no deja expresar como CHECK
+
+Una parada del itinerario debe ser algo: o una reserva, o un punto libre con
+nombre. Lo natural sería:
+
+```sql
+CHECK (reserva_id IS NOT NULL OR titulo_libre IS NOT NULL)
+```
+
+MySQL 8 lo **rechaza** con el error 3823, porque `reserva_id` tiene una clave
+foránea con `ON DELETE SET NULL`: esa acción modificaría la columna sin volver
+a evaluar el `CHECK`, así que el motor prohíbe la combinación en vez de
+permitir filas inválidas.
+
+Como el `SET NULL` es justo el comportamiento deseado (la parada sobrevive a
+la reserva), la regla se aplica con dos triggers `BEFORE INSERT` y
+`BEFORE UPDATE` que lanzan `SIGNAL SQLSTATE '45000'`.
+
+Queda un hueco: las acciones referenciales **no disparan triggers** en MySQL,
+así que un `SET NULL` podría dejar la fila sin reserva y sin título. Se cierra
+desde el controlador, que al agregar una parada desde una reserva guarda
+también el título del servicio.
+
+### 1.7. Política de borrado
 
 | Relación | Regla | Motivo |
 |---|---|---|
 | `usuarios` → `prestadores` | `CASCADE` | El perfil no existe sin la cuenta |
 | `servicios` → `reservas` | `RESTRICT` | No se puede borrar un servicio con historial; hay que desactivarlo (`activo = FALSE`) |
 | `reservas` → `itinerario_items` | `SET NULL` | El punto sigue en el mapa aunque se cancele la reserva |
-| `usuarios` → `prestadores.verificado_por` | `SET NULL` | Si se borra el admin, el prestador sigue verificado |
+| `usuarios` → `prestadores.verificado_por` | `SET NULL` | Si se borra el admin, el prestador conserva su estado de verificación |
 
 ---
 
@@ -113,7 +146,8 @@ erDiagram
         int id PK
         int usuario_id FK,UK
         varchar documento_numero
-        boolean verificado
+        enum estado_verificacion "pendiente|aprobado|rechazado"
+        varchar motivo_rechazo
         int verificado_por FK
     }
 
@@ -211,6 +245,7 @@ Además de los implícitos por PK y UNIQUE:
 
 | Índice | Tabla | Consulta que optimiza |
 |---|---|---|
+| `idx_prestadores_estado (estado_verificacion)` | `prestadores` | Bandeja de solicitudes pendientes del admin |
 | `idx_servicios_busqueda (activo, categoria_id, ciudad)` | `servicios` | Filtro principal del catálogo |
 | `idx_servicios_precio`, `idx_servicios_calificacion` | `servicios` | Ordenar por precio o valoración |
 | `uq_disponibilidad (servicio_id, fecha)` | `disponibilidad` | Consulta de calendario y `upsert` con `ON DUPLICATE KEY UPDATE` |

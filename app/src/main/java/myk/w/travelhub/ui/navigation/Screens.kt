@@ -1,17 +1,49 @@
 package myk.w.travelhub.ui.navigation
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.ui.graphics.vector.ImageVector
+
 /**
  * Rutas de navegacion. Usar un sealed class en vez de strings sueltos evita
  * errores de tipeo: si escribes mal el nombre, no compila.
  */
 sealed class Screens(val route: String) {
     data object Login : Screens("login")
-    data object Home : Screens("home")
 
-    // Pendientes de implementar (MVP del enunciado):
+    // Pestanas de la barra inferior
+    data object Home : Screens("home")
     data object Catalogo : Screens("catalogo")
-    data object Itinerario : Screens("itinerario")
-    data object Costos : Screens("costos")
+    data object Itinerarios : Screens("itinerarios")
     data object Chat : Screens("chat")
-    data object Perfil : Screens("perfil")
+
+    // Pantallas de detalle (fuera de la barra)
+    data object DetalleServicio : Screens("servicio/{id}") {
+        fun con(id: Int) = "servicio/$id"
+    }
+
+    data object DetalleViaje : Screens("viaje/{id}") {
+        fun con(id: Int) = "viaje/$id"
+    }
+}
+
+/**
+ * Las cuatro pestanas de la barra inferior, en orden.
+ *
+ * Se declaran aqui y no dentro del composable para que la barra y el
+ * NavGraph trabajen sobre la misma lista: si se agrega una pestana, no hay
+ * que acordarse de tocar dos sitios.
+ */
+enum class Pestana(
+    val screen: Screens,
+    val etiqueta: String,
+    val icono: ImageVector
+) {
+    INICIO(Screens.Home, "Inicio", Icons.Filled.Home),
+    CATALOGO(Screens.Catalogo, "Catalogo", Icons.Filled.Search),
+    VIAJES(Screens.Itinerarios, "Viajes", Icons.Filled.Map),
+    CHAT(Screens.Chat, "Chat", Icons.AutoMirrored.Filled.Chat)
 }

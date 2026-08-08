@@ -20,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -35,19 +36,24 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import myk.w.travelhub.ui.common.LoadingDialog
+import myk.w.travelhub.ui.common.PreviewPantallas
 import myk.w.travelhub.ui.theme.TravelHubTheme
 
 /**
  * Pantalla de login / registro.
  *
- * No recibe el NavController: recibe una lambda onLoginExitoso. Asi la pantalla
- * no sabe nada de navegacion, se puede previsualizar sin un NavHost y es mucho
- * mas facil de testear.
+ * Esta dividida en dos composables, que es el patron recomendado de Compose:
+ *
+ *   LoginScreen     -> "con estado": habla con el ViewModel y navega.
+ *   LoginContenido  -> "sin estado": solo recibe datos y emite eventos.
+ *
+ * La ventaja practica es que LoginContenido se puede previsualizar en
+ * cualquier estado (error, cargando, modo registro) sin ViewModel ni backend,
+ * y ademas es testeable con pruebas de UI.
  */
 @Composable
 fun LoginScreen(
@@ -57,8 +63,6 @@ fun LoginScreen(
     val estado by viewModel.uiState.collectAsStateWithLifecycle()
     val form by viewModel.form.collectAsStateWithLifecycle()
 
-    var passwordVisible by remember { mutableStateOf(false) }
-
     // Efecto secundario: cuando el login sale bien, navegar UNA sola vez.
     LaunchedEffect(estado) {
         if (estado is LoginUiState.Exito) {
@@ -66,6 +70,32 @@ fun LoginScreen(
             onLoginExitoso()
         }
     }
+
+    LoginContenido(
+        estado = estado,
+        form = form,
+        onNombreChange = viewModel::onNombreChange,
+        onEmailChange = viewModel::onEmailChange,
+        onPasswordChange = viewModel::onPasswordChange,
+        onRolChange = viewModel::onRolChange,
+        onAlternarModo = viewModel::alternarModo,
+        onEnviar = viewModel::enviar
+    )
+}
+
+
+@Composable
+fun LoginContenido(
+    estado: LoginUiState,
+    form: LoginFormState,
+    onNombreChange: (String) -> Unit = {},
+    onEmailChange: (String) -> Unit = {},
+    onPasswordChange: (String) -> Unit = {},
+    onRolChange: (String) -> Unit = {},
+    onAlternarModo: () -> Unit = {},
+    onEnviar: () -> Unit = {}
+) {
+    var passwordVisible by remember { mutableStateOf(false) }
 
     LoadingDialog(
         isLoading = estado is LoginUiState.Cargando,
@@ -104,7 +134,7 @@ fun LoginScreen(
         if (form.modoRegistro) {
             OutlinedTextField(
                 value = form.nombre,
-                onValueChange = viewModel::onNombreChange,
+                onValueChange = onNombreChange,
                 label = { Text("Nombre completo") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -115,8 +145,8 @@ fun LoginScreen(
 
         OutlinedTextField(
             value = form.email,
-            onValueChange = viewModel::onEmailChange,
-            label = { Text("Correo electronico") },
+            onValueChange = onEmailChange,
+            label = { Text("Correo electrónico") },
             singleLine = true,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
@@ -129,9 +159,9 @@ fun LoginScreen(
 
         OutlinedTextField(
             value = form.password,
-            onValueChange = viewModel::onPasswordChange,
-            label = { Text("Contrasena") },
-            supportingText = { Text("Minimo 8 caracteres") },
+            onValueChange = onPasswordChange,
+            label = { Text("Contraseña") },
+            supportingText = { Text("Mínimo 8 carácteres") },
             singleLine = true,
             visualTransformation = if (passwordVisible) {
                 VisualTransformation.None
@@ -151,9 +181,9 @@ fun LoginScreen(
                             Icons.Filled.Visibility
                         },
                         contentDescription = if (passwordVisible) {
-                            "Ocultar contrasena"
+                            "Ocultar contraseña"
                         } else {
-                            "Mostrar contrasena"
+                            "Mostrar contraseña"
                         }
                     )
                 }
@@ -161,7 +191,6 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // El rol solo se elige al registrarse, no al iniciar sesion.
         if (form.modoRegistro) {
             Spacer(Modifier.height(16.dp))
             Text("Me registro como:", style = MaterialTheme.typography.labelLarge)
@@ -169,13 +198,13 @@ fun LoginScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
                     selected = form.rol == "turista",
-                    onClick = { viewModel.onRolChange("turista") },
+                    onClick = { onRolChange("turista") },
                     label = { Text("Turista") }
                 )
                 FilterChip(
                     selected = form.rol == "prestador",
-                    onClick = { viewModel.onRolChange("prestador") },
-                    label = { Text("Prestador de servicios") }
+                    onClick = { onRolChange("prestador") },
+                    label = { Text("Prestador") }
                 )
             }
         }
@@ -194,7 +223,7 @@ fun LoginScreen(
         Spacer(Modifier.height(24.dp))
 
         Button(
-            onClick = viewModel::enviar,
+            onClick = onEnviar,
             enabled = form.esValido && estado !is LoginUiState.Cargando,
             modifier = Modifier
                 .fillMaxWidth()
@@ -215,17 +244,90 @@ fun LoginScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            TextButton(onClick = viewModel::alternarModo) {
+            TextButton(onClick = onAlternarModo) {
                 Text(if (form.modoRegistro) "Inicia sesion" else "Registrate")
             }
         }
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-private fun LoginScreenPreview() {
-    TravelHubTheme {
-        LoginScreen()
+private fun Envoltorio(contenido: @Composable () -> Unit) {
+    TravelHubTheme(dynamicColor = false) {
+        Surface(color = MaterialTheme.colorScheme.background) { contenido() }
     }
+}
+
+@PreviewPantallas
+@Composable
+private fun LoginVacioPreview() = Envoltorio {
+    LoginContenido(
+        estado = LoginUiState.Inicial,
+        form = LoginFormState()
+    )
+}
+
+@PreviewPantallas
+@Composable
+private fun LoginRellenoPreview() = Envoltorio {
+    LoginContenido(
+        estado = LoginUiState.Inicial,
+        form = LoginFormState(email = "camila@example.com", password = "travelhub2026")
+    )
+}
+
+@PreviewPantallas
+@Composable
+private fun RegistroTuristaPreview() = Envoltorio {
+    LoginContenido(
+        estado = LoginUiState.Inicial,
+        form = LoginFormState(
+            nombre = "Camila Rojas",
+            email = "camila@example.com",
+            password = "travelhub2026",
+            modoRegistro = true
+        )
+    )
+}
+
+@PreviewPantallas
+@Composable
+private fun RegistroPrestadorPreview() = Envoltorio {
+    LoginContenido(
+        estado = LoginUiState.Inicial,
+        form = LoginFormState(
+            nombre = "Julio Mamani",
+            email = "julio.guia@example.com",
+            password = "travelhub2026",
+            rol = "prestador",
+            modoRegistro = true
+        )
+    )
+}
+
+@PreviewPantallas
+@Composable
+private fun LoginErrorPreview() = Envoltorio {
+    LoginContenido(
+        estado = LoginUiState.Error("Correo o contraseña incorrectos"),
+        form = LoginFormState(email = "camila@example.com", password = "clavemala")
+    )
+}
+
+@PreviewPantallas
+@Composable
+private fun LoginSinConexionPreview() = Envoltorio {
+    LoginContenido(
+        estado = LoginUiState.Error("No se pudo conectar con el servidor. Revisa tu conexion."),
+        form = LoginFormState(email = "camila@example.com", password = "travelhub2026")
+    )
+}
+
+@PreviewPantallas
+@Composable
+private fun LoginCargandoPreview() = Envoltorio {
+    LoginContenido(
+        estado = LoginUiState.Cargando,
+        form = LoginFormState(email = "camila@example.com", password = "travelhub2026")
+    )
 }

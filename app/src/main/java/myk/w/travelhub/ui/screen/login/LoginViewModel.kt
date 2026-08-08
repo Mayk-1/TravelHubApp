@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import myk.w.travelhub.data.repository.AuthRepository
 
-/** Datos que el usuario va escribiendo en el formulario. */
 data class LoginFormState(
     val nombre: String = "",
     val email: String = "",
@@ -17,7 +16,6 @@ data class LoginFormState(
     val rol: String = "turista",
     val modoRegistro: Boolean = false
 ) {
-    /** Habilita el boton solo si el formulario tiene sentido. */
     val esValido: Boolean
         get() = email.contains("@") &&
                 password.length >= 8 &&
@@ -38,6 +36,7 @@ class LoginViewModel : ViewModel() {
     fun onEmailChange(v: String) = _form.update { it.copy(email = v) }
     fun onPasswordChange(v: String) = _form.update { it.copy(password = v) }
     fun onRolChange(v: String) = _form.update { it.copy(rol = v) }
+
 
     fun alternarModo() {
         _form.update { it.copy(modoRegistro = !it.modoRegistro) }
@@ -65,7 +64,6 @@ class LoginViewModel : ViewModel() {
         }
     }
 
-    /** Se llama despues de navegar, para que el estado no se re-dispare. */
     fun consumirEstado() {
         _uiState.value = LoginUiState.Inicial
     }

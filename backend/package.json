@@ -1,0 +1,28 @@
+{
+  "name": "travelhub-backend",
+  "version": "1.0.0",
+  "description": "API REST de TravelHub - plataforma movil para la gestion de servicios turisticos",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "node pruebas/chat.acceso.test.js",
+    "db:reset": "mysql -u root -p < src/db/schema.sql && mysql -u root -p < src/db/seed.sql"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-validator": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.10.1",
+    "socket.io": "^4.7.5",
+    "swagger-ui-express": "^5.0.1",
+    "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}

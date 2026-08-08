@@ -9,13 +9,19 @@
 -- Uso:  mysql -u root -p < src/db/schema.sql
 --       mysql -u root -p < src/db/seed.sql
 --
--- NOTA: todas las contrasenas de prueba son "travelhub2026". El hash de
--- abajo es bcrypt con 10 rondas de esa cadena. No usar en produccion.
+-- NOTA: todas las contrasenas de prueba son "travelhub2026". El valor de
+-- abajo es su hash bcrypt con 10 rondas. No usar en produccion.
+--
+-- Si alguna vez cambias la contrasena de demo, NO inventes el hash: generalo
+-- con el script incluido, que ademas comprueba que el resultado sea valido.
+--
+--     node scripts/generar-hash.js "la-nueva-clave"
+--
 -- ============================================================================
 
 USE travelhub;
 
-SET @pw = '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
+SET @pw = '$2b$10$jpiy3tN2e.ElqMRt1by9JuTuDpm8jB/k5epkcHtz3UgZr4YScwiSG';
 
 
 -- ----------------------------------------------------------------------------
@@ -39,16 +45,16 @@ INSERT INTO usuarios (id, nombre, email, password_hash, telefono, rol) VALUES
 -- ----------------------------------------------------------------------------
 INSERT INTO prestadores
   (id, usuario_id, razon_social, descripcion, documento_tipo, documento_numero,
-   ciudad_base, verificado, verificado_por, verificado_en) VALUES
+   ciudad_base, estado_verificacion, verificado_por, verificado_en) VALUES
   (1, 5, NULL, 'Guia oficial de turismo con 12 anios recorriendo el lago Titicaca y las islas.',
-   'DNI', '01234567', 'Puno', TRUE, 1, '2026-06-15 10:00:00'),
+   'DNI', '01234567', 'Puno', 'aprobado', 1, '2026-06-15 10:00:00'),
   (2, 6, 'Hostal Casa Rosa', 'Hospedaje familiar a tres cuadras de la plaza de armas.',
-   'RUC', '20123456781', 'Puno', TRUE, 1, '2026-06-16 11:30:00'),
+   'RUC', '20123456781', 'Puno', 'aprobado', 1, '2026-06-16 11:30:00'),
   (3, 7, 'Hotel Titicaca SAC', 'Hotel 3 estrellas con vista al lago.',
-   'RUC', '20987654321', 'Puno', TRUE, 1, '2026-06-18 09:15:00'),
-  -- Pendiente de aprobacion: sirve para demostrar el flujo del admin.
+   'RUC', '20987654321', 'Puno', 'aprobado', 1, '2026-06-18 09:15:00'),
+  -- Pendiente de revision: sirve para demostrar el flujo del admin.
   (4, 8, NULL, 'Guia independiente, rutas de Sillustani y Chucuito.',
-   'DNI', '07654321', 'Puno', FALSE, NULL, NULL);
+   'DNI', '07654321', 'Puno', 'pendiente', NULL, NULL);
 
 
 -- ----------------------------------------------------------------------------
