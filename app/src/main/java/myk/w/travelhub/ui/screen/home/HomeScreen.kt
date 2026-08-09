@@ -14,13 +14,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -40,7 +38,6 @@ import myk.w.travelhub.ui.theme.TravelHubTheme
 
 @Composable
 fun HomeScreen(
-    onCerrarSesion: () -> Unit = {},
     onIrACatalogo: () -> Unit = {},
     onIrAViajes: () -> Unit = {},
     viewModel: HomeViewModel = viewModel()
@@ -51,7 +48,6 @@ fun HomeScreen(
     HomeContenido(
         nombre = nombre,
         rol = rol,
-        onCerrarSesion = { viewModel.cerrarSesion(onCerrarSesion) },
         onIrACatalogo = onIrACatalogo,
         onIrAViajes = onIrAViajes
     )
@@ -63,24 +59,13 @@ fun HomeScreen(
 fun HomeContenido(
     nombre: String?,
     rol: String?,
-    onCerrarSesion: () -> Unit = {},
     onIrACatalogo: () -> Unit = {},
     onIrAViajes: () -> Unit = {}
 ) {
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("TravelHub") },
-                actions = {
-                    IconButton(onClick = onCerrarSesion) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Logout,
-                            contentDescription = "Cerrar sesion"
-                        )
-                    }
-                }
-            )
-        }
+        // Sin acciones en la barra: cerrar sesion vive ahora en la pestana
+        // Perfil, que es donde la gente lo busca.
+        topBar = { TopAppBar(title = { Text("TravelHub") }) }
     ) { innerPadding ->
         Column(
             modifier = Modifier

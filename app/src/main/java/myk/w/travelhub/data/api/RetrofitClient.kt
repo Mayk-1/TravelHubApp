@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit
 object RetrofitClient {
 
     private val logging = HttpLoggingInterceptor().apply {
-        // En release no queremos volcar tokens ni contrasenas al Logcat.
         level = if (BuildConfig.DEBUG) {
             HttpLoggingInterceptor.Level.BODY
         } else {
@@ -20,8 +19,8 @@ object RetrofitClient {
     }
 
     private val client = OkHttpClient.Builder()
-        .addInterceptor(AuthInterceptor())   // primero mete el token
-        .addInterceptor(logging)             // y despues loguea la peticion final
+        .addInterceptor(AuthInterceptor())
+        .addInterceptor(logging)
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .build()

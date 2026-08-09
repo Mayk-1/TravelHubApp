@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -15,6 +16,7 @@ sealed class Screens(val route: String) {
     data object Catalogo : Screens("catalogo")
     data object Itinerarios : Screens("itinerarios")
     data object Chat : Screens("chat")
+    data object Perfil : Screens("perfil")
 
     // Pantallas de detalle (fuera de la barra)
     data object DetalleServicio : Screens("servicio/{id}") {
@@ -34,5 +36,6 @@ enum class Pestana(
     INICIO(Screens.Home, "Inicio", Icons.Filled.Home),
     CATALOGO(Screens.Catalogo, "Catalogo", Icons.Filled.Search),
     VIAJES(Screens.Itinerarios, "Viajes", Icons.Filled.Map),
-    CHAT(Screens.Chat, "Chat", Icons.AutoMirrored.Filled.Chat)
+    CHAT(Screens.Chat, "Chat", Icons.AutoMirrored.Filled.Chat),
+    PERFIL(Screens.Perfil, "Perfil", Icons.Filled.Person)
 }

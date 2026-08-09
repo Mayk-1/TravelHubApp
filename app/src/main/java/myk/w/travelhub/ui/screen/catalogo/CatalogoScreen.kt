@@ -37,9 +37,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -52,6 +53,8 @@ import myk.w.travelhub.data.model.response.CategoriaResponse
 import myk.w.travelhub.data.model.response.ServicioResponse
 import myk.w.travelhub.ui.common.PreviewClaroOscuro
 import myk.w.travelhub.ui.theme.TravelHubTheme
+//import androidx.compose.runtime.getValue
+//import androidx.compose.runtime.setValue
 
 @Composable
 fun CatalogoScreen(
@@ -146,6 +149,8 @@ private fun BarraFiltros(
     onCategoriaChange: (String?) -> Unit,
     onOrdenChange: (String) -> Unit
 ) {
+
+    //var isSelected by remember { mutableStateOf(false) }
     Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
 
         OutlinedTextField(
@@ -165,6 +170,18 @@ private fun BarraFiltros(
         )
 
         Spacer(Modifier.height(8.dp))
+
+        /*
+        FilterChip(
+            selected = isSelected,
+            onClick = {isSelected = !isSelected},
+            label = {Text("Mostrar Registros Nuevos")},
+        )
+
+        Spacer(Modifier.height(8.dp))
+        */
+
+
 
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),

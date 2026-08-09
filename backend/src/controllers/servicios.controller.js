@@ -170,7 +170,7 @@ async function categorias(req, res) {
 }
 
 /**
- * POST /api/servicios   (solo prestadores verificados)
+ * POST /api/servicios
  */
 async function crear(req, res) {
   const {

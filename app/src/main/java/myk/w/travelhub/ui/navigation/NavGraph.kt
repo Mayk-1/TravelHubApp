@@ -26,6 +26,7 @@ import myk.w.travelhub.ui.screen.home.HomeScreen
 import myk.w.travelhub.ui.screen.itinerarios.DetalleViajeScreen
 import myk.w.travelhub.ui.screen.itinerarios.ItinerariosScreen
 import myk.w.travelhub.ui.screen.login.LoginScreen
+import myk.w.travelhub.ui.screen.perfil.PerfilScreen
 import myk.w.travelhub.ui.screen.servicio.DetalleServicioScreen
 
 @Composable
@@ -60,12 +61,6 @@ fun NavGraph(sesionActiva: Boolean) {
 
             composable(Screens.Home.route) {
                 HomeScreen(
-                    onCerrarSesion = {
-                        navController.navigate(Screens.Login.route) {
-                            popUpTo(0) { inclusive = true }
-                            launchSingleTop = true
-                        }
-                    },
                     onIrACatalogo = { navController.irAPestana(Screens.Catalogo) },
                     onIrAViajes = { navController.irAPestana(Screens.Itinerarios) }
                 )
@@ -88,6 +83,20 @@ fun NavGraph(sesionActiva: Boolean) {
             }
 
             composable(Screens.Chat.route) { EnConstruccion("Chat") }
+
+            composable(Screens.Perfil.route) {
+                PerfilScreen(
+                    onCerrarSesion = {
+                        navController.navigate(Screens.Login.route) {
+                            // Se limpia TODO el historial: tras cerrar sesion no
+                            // debe quedar ninguna pantalla con datos del usuario
+                            // accesible con el boton atras.
+                            popUpTo(0) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
 
             composable(Screens.DetalleServicio.route) { entradaRuta ->
                 val id = entradaRuta.arguments?.getString("id")?.toIntOrNull()

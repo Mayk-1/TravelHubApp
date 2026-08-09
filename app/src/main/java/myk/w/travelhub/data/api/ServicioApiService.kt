@@ -2,6 +2,7 @@ package myk.w.travelhub.data.api
 
 import myk.w.travelhub.data.model.response.CategoriaResponse
 import myk.w.travelhub.data.model.response.DisponibilidadResponse
+import myk.w.travelhub.data.model.response.MiServicioResponse
 import myk.w.travelhub.data.model.response.PaginaResponse
 import myk.w.travelhub.data.model.response.ServicioDetalleResponse
 import myk.w.travelhub.data.model.response.ServicioResponse
@@ -27,6 +28,10 @@ interface ServicioApiService {
 
     @GET("servicios/categorias")
     suspend fun categorias(): Response<List<CategoriaResponse>>
+
+    /** Servicios publicados por el prestador que ha iniciado sesion. */
+    @GET("servicios/mios")
+    suspend fun mios(): Response<List<MiServicioResponse>>
 
     @GET("servicios/{id}")
     suspend fun detalle(@Path("id") id: Int): Response<ServicioDetalleResponse>

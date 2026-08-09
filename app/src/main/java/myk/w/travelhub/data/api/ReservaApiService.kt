@@ -2,6 +2,7 @@ package myk.w.travelhub.data.api
 
 import myk.w.travelhub.data.model.request.AgregarParadaRequest
 import myk.w.travelhub.data.model.request.CrearReservaRequest
+import myk.w.travelhub.data.model.response.ReservaRecibidaResponse
 import myk.w.travelhub.data.model.response.ReservaResponse
 import retrofit2.Response
 import retrofit2.http.Body
@@ -17,6 +18,10 @@ interface ReservaApiService {
 
     @GET("reservas")
     suspend fun mias(@Query("estado") estado: String? = null): Response<List<ReservaResponse>>
+
+    /** Reservas que ha recibido el prestador en sus servicios. */
+    @GET("reservas/recibidas")
+    suspend fun recibidas(): Response<List<ReservaRecibidaResponse>>
 
     @POST("itinerarios/{id}/dias/{dia}/items")
     suspend fun agregarAlItinerario(

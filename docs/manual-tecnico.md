@@ -588,4 +588,4 @@ celular físico, la IP de tu máquina en la red local.
 ## Documentos relacionados
 
 - [`modelo-datos.md`](modelo-datos.md) — diagrama ER y detalle de cada tabla
-- [`../backend/README.md`](../backend/README.md) — referencia de los 44 endpoints
+- [`../backend/README.md`](../README.md) — referencia de los 44 endpoints

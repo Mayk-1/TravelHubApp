@@ -17,7 +17,6 @@ CREATE TABLE usuarios (
   INDEX idx_usuarios_rol (rol)
 ) ENGINE=InnoDB;
 
--- Perfil extendido de quien ofrece servicios.
 CREATE TABLE prestadores (
   id                INT AUTO_INCREMENT PRIMARY KEY,
   usuario_id        INT           NOT NULL UNIQUE,

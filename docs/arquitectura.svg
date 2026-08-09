@@ -1,0 +1,112 @@
+<svg viewBox="0 0 860 660" width="860" height="660" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Arquitectura de TravelHub en tres capas</title>
+<desc id="desc">La app Android en Kotlin y Compose habla por HTTP y WebSocket con una API REST en Node y Express, que a su vez consulta una base de datos MySQL de 21 tablas.</desc>
+
+<defs>
+<marker id="f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M0,0 L10,5 L0,10 z" fill="#5A6472"/>
+</marker>
+<marker id="b" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M10,0 L0,5 L10,10 z" fill="#5A6472"/>
+</marker>
+</defs>
+
+<style>
+.cap{fill:#F2F5F8;stroke:#C9D2DC;stroke-width:1.5}
+.caja{fill:#FFFFFF;stroke:#C9D2DC;stroke-width:1}
+.tit{font:600 15px 'Segoe UI',Calibri,sans-serif;fill:#185FA5}
+.sub{font:11px 'Segoe UI',Calibri,sans-serif;fill:#5A6472}
+.et{font:12px 'Segoe UI',Calibri,sans-serif;fill:#1B2430}
+.pe{font:10px 'Segoe UI',Calibri,sans-serif;fill:#5A6472}
+.fl{font:600 11px 'Segoe UI',Calibri,sans-serif;fill:#1B2430}
+.ln{stroke:#5A6472;stroke-width:1.6;fill:none}
+</style>
+
+<rect width="860" height="660" fill="#FFFFFF"/>
+
+<!-- APP ANDROID -->
+<rect class="cap" x="20" y="16" width="820" height="196" rx="10"/>
+<text class="tit" x="40" y="44">App Android</text>
+<text class="sub" x="146" y="44">Kotlin · Jetpack Compose · 51 archivos</text>
+
+<rect class="caja" x="40" y="58" width="780" height="42" rx="6"/>
+<text class="et" x="54" y="76">Pantallas (Compose)</text>
+<text class="pe" x="54" y="91">Login · Home · Catálogo · Viajes · Detalle del servicio — 63 vistas previas</text>
+
+<rect class="caja" x="40" y="106" width="380" height="42" rx="6"/>
+<text class="et" x="54" y="124">ViewModel</text>
+<text class="pe" x="54" y="139">6 · estado en StateFlow, sobrevive al giro</text>
+
+<rect class="caja" x="440" y="106" width="380" height="42" rx="6"/>
+<text class="et" x="454" y="124">Repository</text>
+<text class="pe" x="454" y="139">4 · traduce HTTP a éxito o error</text>
+
+<rect class="caja" x="40" y="154" width="252" height="42" rx="6"/>
+<text class="et" x="54" y="172">ApiService (Retrofit)</text>
+<text class="pe" x="54" y="187">5 interfaces · Gson</text>
+
+<rect class="caja" x="304" y="154" width="252" height="42" rx="6"/>
+<text class="et" x="318" y="172">AuthInterceptor</text>
+<text class="pe" x="318" y="187">inyecta el token Bearer</text>
+
+<rect class="caja" x="568" y="154" width="252" height="42" rx="6"/>
+<text class="et" x="582" y="172">TokenStore</text>
+<text class="pe" x="582" y="187">DataStore · sesión persistente</text>
+
+<!-- RED -->
+<line class="ln" x1="240" y1="212" x2="240" y2="266" marker-end="url(#f)" marker-start="url(#b)"/>
+<text class="fl" x="252" y="234">HTTP / JSON</text>
+<text class="pe" x="252" y="248">44 endpoints REST</text>
+
+<line class="ln" x1="640" y1="212" x2="640" y2="266" marker-end="url(#f)" marker-start="url(#b)"/>
+<text class="fl" x="652" y="234">WebSocket</text>
+<text class="pe" x="652" y="248">Socket.io · 6 eventos</text>
+
+<!-- BACKEND -->
+<rect class="cap" x="20" y="272" width="820" height="244" rx="10"/>
+<text class="tit" x="40" y="300">API REST</text>
+<text class="sub" x="112" y="300">Node.js · Express · 20 archivos</text>
+
+<rect class="caja" x="40" y="314" width="780" height="40" rx="6"/>
+<text class="et" x="54" y="331">server.js</text>
+<text class="pe" x="54" y="345">Monta las rutas y adjunta Socket.io al mismo puerto</text>
+
+<rect class="caja" x="40" y="360" width="780" height="46" rx="6"/>
+<text class="et" x="54" y="378">Middleware</text>
+<text class="pe" x="54" y="393">verificarToken · exigirRol · asyncHandler · manejadorErrores</text>
+
+<rect class="caja" x="40" y="412" width="252" height="46" rx="6"/>
+<text class="et" x="54" y="430">routes/</text>
+<text class="pe" x="54" y="445">Qué ruta existe y quién entra</text>
+
+<rect class="caja" x="304" y="412" width="252" height="46" rx="6"/>
+<text class="et" x="318" y="430">controllers/</text>
+<text class="pe" x="318" y="445">7 · la lógica y el SQL</text>
+
+<rect class="caja" x="568" y="412" width="252" height="46" rx="6"/>
+<text class="et" x="582" y="430">services/ · sockets/</text>
+<text class="pe" x="582" y="445">Lógica compartida y chat</text>
+
+<rect class="caja" x="40" y="464" width="780" height="40" rx="6"/>
+<text class="et" x="54" y="481">config/db.js</text>
+<text class="pe" x="54" y="495">Pool de 10 conexiones reutilizadas · mysql2</text>
+
+<!-- SQL -->
+<line class="ln" x1="430" y1="516" x2="430" y2="562" marker-end="url(#f)" marker-start="url(#b)"/>
+<text class="fl" x="442" y="536">SQL</text>
+<text class="pe" x="442" y="550">Consultas con placeholders</text>
+
+<!-- BASE DE DATOS -->
+<rect class="cap" x="20" y="568" width="820" height="76" rx="10"/>
+<text class="tit" x="40" y="596">MySQL</text>
+<text class="sub" x="102" y="596">InnoDB · utf8mb4</text>
+
+<rect class="caja" x="40" y="606" width="185" height="26" rx="6"/>
+<text class="pe" x="54" y="623">21 tablas</text>
+<rect class="caja" x="238" y="606" width="185" height="26" rx="6"/>
+<text class="pe" x="252" y="623">2 vistas</text>
+<rect class="caja" x="436" y="606" width="185" height="26" rx="6"/>
+<text class="pe" x="450" y="623">4 triggers</text>
+<rect class="caja" x="634" y="606" width="186" height="26" rx="6"/>
+<text class="pe" x="648" y="623">27 claves foráneas</text>
+</svg>
